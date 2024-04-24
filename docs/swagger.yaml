@@ -1,0 +1,18 @@
+basePath: /
+host: localhost:3000
+info:
+  contact:
+    email: support@openfiat.org
+    name: Girish Bhutiya
+    url: '#'
+  description: This is a APIs for OpenflatServer.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Openflat Server API
+  version: "0.1"
+paths: {}
+securityDefinitions:
+  BasicAuth:
+    type: basic
+swagger: "2.0"
