@@ -25,6 +25,7 @@ type Config struct {
 	DatabaseKeySpace        string        `mapstructure:"DATABASE_KEYSPACE"`
 	DBMigrateUp             bool          `mapstructure:"DB_MIGRATE_UP"`
 	OTPAPIURL               string        `mapstructure:"OTP_API_URL"`
+	Production              bool          `mapstructure:"PRODUCTION"`
 }
 
 // LoadConfig reads configuration from file or environment variables.

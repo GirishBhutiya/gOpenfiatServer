@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -79,27 +80,33 @@ func (app *Server) Register(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println("\nPhone is:", user.PhoneNumber)
 	//TODO: send OTP
-	/* data, err := util.SendOTP(user.PhoneNumber, &app.Config)
-	if err != nil {
-		log.Println(err)
-		app.errorJSON(w, err)
-		return
-	}
 	var otpRes OTPResponse
-	err = json.Unmarshal(data, &otpRes)
-	if err != nil {
-		log.Println(err)
-		app.errorJSON(w, err)
-		return
+	if app.Config.Production {
+		data, err := util.SendOTP(user.PhoneNumber, &app.Config)
+		if err != nil {
+			log.Println(err)
+			app.errorJSON(w, err)
+			return
+		}
+
+		err = json.Unmarshal(data, &otpRes)
+		if err != nil {
+			log.Println(err)
+			app.errorJSON(w, err)
+			return
+		}
+		fmt.Println("OTP is:", otpRes.OTP)
+		if otpRes.Status == "Error" {
+			log.Println(err)
+			app.errorJSON(w, errors.New(otpRes.Details))
+			return
+		}
+	} else {
+		otpRes.OTP = 123456
 	}
-	fmt.Println("OTP is:", otpRes.OTP)
-	if otpRes.Status == "Error" {
-		log.Println(err)
-		app.errorJSON(w, errors.New(otpRes.Details))
-		return
-	} */
+
 	//Insert to database
-	err = app.Store.InserLoginRegister(123456, &user)
+	err = app.Store.InserLoginRegister(otpRes.OTP, &user)
 	//err = app.Store.InserLoginRegister(otpRes.OTP, &user)
 	if err != nil {
 		log.Println(err)

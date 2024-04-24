@@ -16,6 +16,7 @@ gen
 *.dll
 *.so
 *.dylib
+/dbbundle/*
 
 # Test binary, built with `go test -c`
 *.test
