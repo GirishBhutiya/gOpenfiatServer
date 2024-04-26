@@ -3,8 +3,8 @@ package api
 import (
 	"net/http"
 
-	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
@@ -34,7 +34,14 @@ func (app *Server) Routes() http.Handler {
 	mux.Route("/user", func(mux chi.Router) {
 		mux.Use(app.AuthMiddleware)
 		mux.Post("/update", app.UpdateUser)
-		mux.Post("/delete-account", app.DeleteUser)
+		mux.Post("/delete", app.DeleteUser)
+		mux.Post("/create-order", app.CreateOrder)
+		mux.Post("/update-ordervalue", app.UpdateOrderValue)
+		mux.Post("/order-confirming", app.ConfirmingOrder)
+		mux.Post("/order-confirm", app.ConfirmOrder)
+		mux.Post("/order-disputed", app.DisputedOrder)
+		mux.Post("/order-delete", app.DeleteOrder)
+		mux.Post("/allorders", app.GetUserAllOrders)
 
 	})
 	//SwaggerRequest(mux)

@@ -5,7 +5,7 @@ package main
 // @description     This is a APIs for OpenflatServer.
 // @termsOfService
 
-// @contact.name   Girish Bhutiya
+// @contact.name   openfiat.org
 // @contact.url    #
 // @contact.email  support@openfiat.org
 
@@ -16,7 +16,7 @@ package main
 // @BasePath  /
 
 // @securityDefinitions.basic  BasicAuth
-
+// @ACCESS_TOKEN_DURATION=15m
 import (
 	"fmt"
 	"log"

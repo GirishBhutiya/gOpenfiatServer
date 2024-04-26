@@ -1,9 +1,92 @@
 basePath: /
+definitions:
+  api.AuthPayload:
+    properties:
+      otp:
+        description: |-
+          otp of the user which get in phone
+          in: integer
+        type: integer
+      phonenumber:
+        description: |-
+          phonenumber of the user
+          in: integer
+        type: integer
+    type: object
+  api.jsonResponse:
+    properties:
+      data: {}
+      error:
+        type: boolean
+      message:
+        type: string
+    type: object
+  types.Order:
+    properties:
+      amount:
+        description: |-
+          amount of the order
+          in: integer
+        type: number
+      from_phonenumber:
+        description: |-
+          phonenumber of the user who placed the order
+          in: integer
+        type: integer
+      id:
+        description: |-
+          id of the order
+          in: uuid
+        type: string
+      status:
+        description: |-
+          status of the order
+          in: string
+        type: string
+      to_phonenumber:
+        description: |-
+          phonenumber of the user who is receiving the order
+          in: integer
+        type: integer
+    type: object
+  types.User:
+    properties:
+      first_name:
+        description: |-
+          first name of the user
+          in: string
+        type: string
+      last_name:
+        description: |-
+          last name of the user
+          in: string
+        type: string
+      phonenumber:
+        description: |-
+          phonenumber of the user
+          in: integer
+        type: integer
+      profile_pic:
+        description: |-
+          profile pic link of the user
+          in: string
+        type: string
+      roll_id:
+        description: |-
+          roll of the user admin or user
+          in: integer
+        type: integer
+      verified:
+        description: |-
+          Is users phone number verified
+          in: boolean
+        type: boolean
+    type: object
 host: localhost:3000
 info:
   contact:
     email: support@openfiat.org
-    name: Girish Bhutiya
+    name: openfiat.org
     url: '#'
   description: This is a APIs for OpenflatServer.
   license:
@@ -11,7 +94,313 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   title: Openflat Server API
   version: "0.1"
-paths: {}
+paths:
+  /:
+    get:
+      consumes:
+      - application/json
+      description: This API can be used as health check for this application.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.jsonResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.jsonResponse'
+      summary: This API can be used as health check for this application.
+      tags:
+      - Brocker
+  /order/update-ordervalue:
+    post:
+      consumes:
+      - application/json
+      description: This Api is used to update the order amount
+      parameters:
+      - description: Order
+        in: body
+        name: order
+        required: true
+        schema:
+          $ref: '#/definitions/types.Order'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.jsonResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.jsonResponse'
+      summary: Update Order Value
+      tags:
+      - Order
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: This API is used to register user with Phone number
+      parameters:
+      - description: User
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/types.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.jsonResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.jsonResponse'
+      summary: This API is used to register user with Phone number
+      tags:
+      - User
+  /user/allorders:
+    post:
+      consumes:
+      - application/json
+      description: This API is used to get all orders of a user
+      parameters:
+      - description: User
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/types.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.jsonResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.jsonResponse'
+      summary: Get all orders of a user
+      tags:
+      - Order
+  /user/create-order:
+    post:
+      consumes:
+      - application/json
+      description: Create a new order with status pending
+      parameters:
+      - description: Order
+        in: body
+        name: order
+        required: true
+        schema:
+          $ref: '#/definitions/types.Order'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.jsonResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.jsonResponse'
+      summary: Create a new order
+      tags:
+      - Order
+  /user/delete:
+    post:
+      consumes:
+      - application/json
+      description: Delete a user
+      parameters:
+      - description: User
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/types.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.jsonResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.jsonResponse'
+      summary: Delete User
+      tags:
+      - User
+  /user/order-confirm:
+    post:
+      consumes:
+      - application/json
+      description: This Api is used to change the order status to confirm
+      parameters:
+      - description: Order
+        in: body
+        name: order
+        required: true
+        schema:
+          $ref: '#/definitions/types.Order'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.jsonResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.jsonResponse'
+      summary: ConfirmOrder
+      tags:
+      - Order
+  /user/order-confirming:
+    post:
+      consumes:
+      - application/json
+      description: This Apis is used to change the order status to confirming
+      parameters:
+      - description: Order
+        in: body
+        name: order
+        required: true
+        schema:
+          $ref: '#/definitions/types.Order'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.jsonResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.jsonResponse'
+      summary: ConfirmingOrder
+      tags:
+      - Order
+  /user/order-delete:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an order
+      parameters:
+      - description: Order
+        in: body
+        name: order
+        required: true
+        schema:
+          $ref: '#/definitions/types.Order'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.jsonResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.jsonResponse'
+      summary: Delete an order
+      tags:
+      - Order
+  /user/order-disputed:
+    post:
+      consumes:
+      - application/json
+      description: This API is used to change the order status to disputed
+      parameters:
+      - description: Order
+        in: body
+        name: order
+        required: true
+        schema:
+          $ref: '#/definitions/types.Order'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.jsonResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.jsonResponse'
+      summary: DisputedOrder
+      tags:
+      - Order
+  /user/update:
+    post:
+      consumes:
+      - application/json
+      description: This API is used to update user profile like First Name, Last Name
+        etc
+      parameters:
+      - description: User
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/types.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.jsonResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.jsonResponse'
+      summary: Update User profile
+      tags:
+      - User
+  /verifyotp:
+    post:
+      consumes:
+      - application/json
+      description: Verify OTP which you get after register
+      parameters:
+      - description: payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/api.AuthPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.jsonResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.jsonResponse'
+      summary: Verify OTP
+      tags:
+      - Auth
 securityDefinitions:
   BasicAuth:
     type: basic
