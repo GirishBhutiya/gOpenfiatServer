@@ -1,6 +1,6 @@
 basePath: /
 definitions:
-  api.AuthPayload:
+  handler.AuthPayload:
     properties:
       otp:
         description: |-
@@ -13,7 +13,7 @@ definitions:
           in: integer
         type: integer
     type: object
-  api.jsonResponse:
+  handler.jsonResponse:
     properties:
       data: {}
       error:
@@ -21,7 +21,7 @@ definitions:
       message:
         type: string
     type: object
-  types.Order:
+  model.Order:
     properties:
       amount:
         description: |-
@@ -49,7 +49,7 @@ definitions:
           in: integer
         type: integer
     type: object
-  types.User:
+  model.User:
     properties:
       first_name:
         description: |-
@@ -82,7 +82,7 @@ definitions:
           in: boolean
         type: boolean
     type: object
-host: localhost:3000
+host: g-openfiat-server.vercel.app
 info:
   contact:
     email: support@openfiat.org
@@ -106,40 +106,14 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api.jsonResponse'
+            $ref: '#/definitions/handler.jsonResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/api.jsonResponse'
+            $ref: '#/definitions/handler.jsonResponse'
       summary: This API can be used as health check for this application.
       tags:
       - Brocker
-  /order/update-ordervalue:
-    post:
-      consumes:
-      - application/json
-      description: This Api is used to update the order amount
-      parameters:
-      - description: Order
-        in: body
-        name: order
-        required: true
-        schema:
-          $ref: '#/definitions/types.Order'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/api.jsonResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/api.jsonResponse'
-      summary: Update Order Value
-      tags:
-      - Order
   /register:
     post:
       consumes:
@@ -151,18 +125,18 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/types.User'
+          $ref: '#/definitions/model.User'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api.jsonResponse'
+            $ref: '#/definitions/handler.jsonResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/api.jsonResponse'
+            $ref: '#/definitions/handler.jsonResponse'
       summary: This API is used to register user with Phone number
       tags:
       - User
@@ -177,18 +151,18 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/types.User'
+          $ref: '#/definitions/model.User'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api.jsonResponse'
+            $ref: '#/definitions/handler.jsonResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/api.jsonResponse'
+            $ref: '#/definitions/handler.jsonResponse'
       summary: Get all orders of a user
       tags:
       - Order
@@ -203,18 +177,18 @@ paths:
         name: order
         required: true
         schema:
-          $ref: '#/definitions/types.Order'
+          $ref: '#/definitions/model.Order'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api.jsonResponse'
+            $ref: '#/definitions/handler.jsonResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/api.jsonResponse'
+            $ref: '#/definitions/handler.jsonResponse'
       summary: Create a new order
       tags:
       - Order
@@ -229,18 +203,18 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/types.User'
+          $ref: '#/definitions/model.User'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api.jsonResponse'
+            $ref: '#/definitions/handler.jsonResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/api.jsonResponse'
+            $ref: '#/definitions/handler.jsonResponse'
       summary: Delete User
       tags:
       - User
@@ -255,18 +229,18 @@ paths:
         name: order
         required: true
         schema:
-          $ref: '#/definitions/types.Order'
+          $ref: '#/definitions/model.Order'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api.jsonResponse'
+            $ref: '#/definitions/handler.jsonResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/api.jsonResponse'
+            $ref: '#/definitions/handler.jsonResponse'
       summary: ConfirmOrder
       tags:
       - Order
@@ -281,23 +255,23 @@ paths:
         name: order
         required: true
         schema:
-          $ref: '#/definitions/types.Order'
+          $ref: '#/definitions/model.Order'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api.jsonResponse'
+            $ref: '#/definitions/handler.jsonResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/api.jsonResponse'
+            $ref: '#/definitions/handler.jsonResponse'
       summary: ConfirmingOrder
       tags:
       - Order
   /user/order-delete:
-    delete:
+    post:
       consumes:
       - application/json
       description: Delete an order
@@ -307,18 +281,18 @@ paths:
         name: order
         required: true
         schema:
-          $ref: '#/definitions/types.Order'
+          $ref: '#/definitions/model.Order'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api.jsonResponse'
+            $ref: '#/definitions/handler.jsonResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/api.jsonResponse'
+            $ref: '#/definitions/handler.jsonResponse'
       summary: Delete an order
       tags:
       - Order
@@ -333,18 +307,18 @@ paths:
         name: order
         required: true
         schema:
-          $ref: '#/definitions/types.Order'
+          $ref: '#/definitions/model.Order'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api.jsonResponse'
+            $ref: '#/definitions/handler.jsonResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/api.jsonResponse'
+            $ref: '#/definitions/handler.jsonResponse'
       summary: DisputedOrder
       tags:
       - Order
@@ -360,21 +334,47 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/types.User'
+          $ref: '#/definitions/model.User'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api.jsonResponse'
+            $ref: '#/definitions/handler.jsonResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/api.jsonResponse'
+            $ref: '#/definitions/handler.jsonResponse'
       summary: Update User profile
       tags:
       - User
+  /user/update-ordervalue:
+    post:
+      consumes:
+      - application/json
+      description: This Api is used to update the order amount
+      parameters:
+      - description: Order
+        in: body
+        name: order
+        required: true
+        schema:
+          $ref: '#/definitions/model.Order'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.jsonResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.jsonResponse'
+      summary: Update Order Value
+      tags:
+      - Order
   /verifyotp:
     post:
       consumes:
@@ -386,22 +386,19 @@ paths:
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/api.AuthPayload'
+          $ref: '#/definitions/handler.AuthPayload'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api.jsonResponse'
+            $ref: '#/definitions/handler.jsonResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/api.jsonResponse'
+            $ref: '#/definitions/handler.jsonResponse'
       summary: Verify OTP
       tags:
       - Auth
-securityDefinitions:
-  BasicAuth:
-    type: basic
 swagger: "2.0"

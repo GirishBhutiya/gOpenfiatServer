@@ -90,7 +90,7 @@ func Brocker(w http.ResponseWriter, r *http.Request) {
 // @Tags			User
 // @Accept			json
 // @Produce			json
-// @Param user body types.User true "User"
+// @Param user body model.User true "User"
 // @Success 200 {object} jsonResponse
 // @Failure 401 {object} jsonResponse
 // @Router /register [post]
@@ -211,7 +211,7 @@ func VerifyOTP(w http.ResponseWriter, r *http.Request) {
 // @Tags User
 // @Accept  json
 // @Produce  json
-// @Param user body types.User true "User"
+// @Param user body model.User true "User"
 // @Success 200 {object} jsonResponse
 // @Failure 401 {object} jsonResponse
 // @Router /user/update [post]
@@ -254,7 +254,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 // @Tags User
 // @Accept  json
 // @Produce  json
-// @Param user body types.User true "User"
+// @Param user body model.User true "User"
 // @Success 200 {object} jsonResponse
 // @Failure 401 {object} jsonResponse
 // @Router /user/delete [post]
@@ -298,7 +298,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 // @Tags Order
 // @Accept  json
 // @Produce  json
-// @Param order body types.Order true "Order"
+// @Param order body model.Order true "Order"
 // @Success 200 {object} jsonResponse
 // @Failure 401 {object} jsonResponse
 // @Router /user/create-order [post]
@@ -349,7 +349,7 @@ func CreateOrder(w http.ResponseWriter, r *http.Request) {
 // @Tags Order
 // @Accept  json
 // @Produce  json
-// @Param order body types.Order true "Order"
+// @Param order body model.Order true "Order"
 // @Success 200 {object} jsonResponse
 // @Failure 401 {object} jsonResponse
 // @Router /user/update-ordervalue [post]
@@ -403,7 +403,7 @@ func UpdateOrderValue(w http.ResponseWriter, r *http.Request) {
 // @Tags Order
 // @Accept  json
 // @Produce  json
-// @Param order body types.Order true "Order"
+// @Param order body model.Order true "Order"
 // @Success 200 {object} jsonResponse
 // @Failure 401 {object} jsonResponse
 // @Router /user/order-confirming [post]
@@ -457,7 +457,7 @@ func ConfirmingOrder(w http.ResponseWriter, r *http.Request) {
 // @Tags Order
 // @Accept  json
 // @Produce  json
-// @Param order body types.Order true "Order"
+// @Param order body model.Order true "Order"
 // @Success 200 {object} jsonResponse
 // @Failure 401 {object} jsonResponse
 // @Router /user/order-confirm [post]
@@ -511,7 +511,7 @@ func ConfirmOrder(w http.ResponseWriter, r *http.Request) {
 // @Tags Order
 // @Accept  json
 // @Produce  json
-// @Param order body types.Order true "Order"
+// @Param order body model.Order true "Order"
 // @Success 200 {object} jsonResponse
 // @Failure 401 {object} jsonResponse
 // @Router /user/order-disputed [post]
@@ -565,7 +565,7 @@ func DisputedOrder(w http.ResponseWriter, r *http.Request) {
 // @Tags Order
 // @Accept  json
 // @Produce  json
-// @Param order body types.Order true "Order"
+// @Param order body model.Order true "Order"
 // @Success 200 {object} jsonResponse
 // @Failure 401 {object} jsonResponse
 // @Router /user/order-delete [post]
@@ -622,7 +622,7 @@ func DeleteOrder(w http.ResponseWriter, r *http.Request) {
 // @Tags Order
 // @Accept  json
 // @Produce  json
-// @Param user body types.User true "User"
+// @Param user body model.User true "User"
 // @Success 200 {object} jsonResponse
 // @Failure 401 {object} jsonResponse
 // @Router /user/allorders [post]

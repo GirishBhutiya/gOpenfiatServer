@@ -40,53 +40,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/api.jsonResponse"
+                            "$ref": "#/definitions/handler.jsonResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/api.jsonResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/order/update-ordervalue": {
-            "post": {
-                "description": "This Api is used to update the order amount",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Order"
-                ],
-                "summary": "Update Order Value",
-                "parameters": [
-                    {
-                        "description": "Order",
-                        "name": "order",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/types.Order"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/api.jsonResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/api.jsonResponse"
+                            "$ref": "#/definitions/handler.jsonResponse"
                         }
                     }
                 }
@@ -112,7 +72,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.User"
+                            "$ref": "#/definitions/model.User"
                         }
                     }
                 ],
@@ -120,13 +80,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/api.jsonResponse"
+                            "$ref": "#/definitions/handler.jsonResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/api.jsonResponse"
+                            "$ref": "#/definitions/handler.jsonResponse"
                         }
                     }
                 }
@@ -152,7 +112,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.User"
+                            "$ref": "#/definitions/model.User"
                         }
                     }
                 ],
@@ -160,13 +120,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/api.jsonResponse"
+                            "$ref": "#/definitions/handler.jsonResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/api.jsonResponse"
+                            "$ref": "#/definitions/handler.jsonResponse"
                         }
                     }
                 }
@@ -192,7 +152,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.Order"
+                            "$ref": "#/definitions/model.Order"
                         }
                     }
                 ],
@@ -200,13 +160,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/api.jsonResponse"
+                            "$ref": "#/definitions/handler.jsonResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/api.jsonResponse"
+                            "$ref": "#/definitions/handler.jsonResponse"
                         }
                     }
                 }
@@ -232,7 +192,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.User"
+                            "$ref": "#/definitions/model.User"
                         }
                     }
                 ],
@@ -240,13 +200,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/api.jsonResponse"
+                            "$ref": "#/definitions/handler.jsonResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/api.jsonResponse"
+                            "$ref": "#/definitions/handler.jsonResponse"
                         }
                     }
                 }
@@ -272,7 +232,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.Order"
+                            "$ref": "#/definitions/model.Order"
                         }
                     }
                 ],
@@ -280,13 +240,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/api.jsonResponse"
+                            "$ref": "#/definitions/handler.jsonResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/api.jsonResponse"
+                            "$ref": "#/definitions/handler.jsonResponse"
                         }
                     }
                 }
@@ -312,7 +272,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.Order"
+                            "$ref": "#/definitions/model.Order"
                         }
                     }
                 ],
@@ -320,20 +280,20 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/api.jsonResponse"
+                            "$ref": "#/definitions/handler.jsonResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/api.jsonResponse"
+                            "$ref": "#/definitions/handler.jsonResponse"
                         }
                     }
                 }
             }
         },
         "/user/order-delete": {
-            "delete": {
+            "post": {
                 "description": "Delete an order",
                 "consumes": [
                     "application/json"
@@ -352,7 +312,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.Order"
+                            "$ref": "#/definitions/model.Order"
                         }
                     }
                 ],
@@ -360,13 +320,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/api.jsonResponse"
+                            "$ref": "#/definitions/handler.jsonResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/api.jsonResponse"
+                            "$ref": "#/definitions/handler.jsonResponse"
                         }
                     }
                 }
@@ -392,7 +352,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.Order"
+                            "$ref": "#/definitions/model.Order"
                         }
                     }
                 ],
@@ -400,13 +360,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/api.jsonResponse"
+                            "$ref": "#/definitions/handler.jsonResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/api.jsonResponse"
+                            "$ref": "#/definitions/handler.jsonResponse"
                         }
                     }
                 }
@@ -432,7 +392,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.User"
+                            "$ref": "#/definitions/model.User"
                         }
                     }
                 ],
@@ -440,13 +400,53 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/api.jsonResponse"
+                            "$ref": "#/definitions/handler.jsonResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/api.jsonResponse"
+                            "$ref": "#/definitions/handler.jsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/update-ordervalue": {
+            "post": {
+                "description": "This Api is used to update the order amount",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Order"
+                ],
+                "summary": "Update Order Value",
+                "parameters": [
+                    {
+                        "description": "Order",
+                        "name": "order",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.Order"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.jsonResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.jsonResponse"
                         }
                     }
                 }
@@ -472,7 +472,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/api.AuthPayload"
+                            "$ref": "#/definitions/handler.AuthPayload"
                         }
                     }
                 ],
@@ -480,13 +480,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/api.jsonResponse"
+                            "$ref": "#/definitions/handler.jsonResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/api.jsonResponse"
+                            "$ref": "#/definitions/handler.jsonResponse"
                         }
                     }
                 }
@@ -494,7 +494,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "api.AuthPayload": {
+        "handler.AuthPayload": {
             "type": "object",
             "properties": {
                 "otp": {
@@ -507,7 +507,7 @@ const docTemplate = `{
                 }
             }
         },
-        "api.jsonResponse": {
+        "handler.jsonResponse": {
             "type": "object",
             "properties": {
                 "data": {},
@@ -519,7 +519,7 @@ const docTemplate = `{
                 }
             }
         },
-        "types.Order": {
+        "model.Order": {
             "type": "object",
             "properties": {
                 "amount": {
@@ -544,7 +544,7 @@ const docTemplate = `{
                 }
             }
         },
-        "types.User": {
+        "model.User": {
             "type": "object",
             "properties": {
                 "first_name": {
@@ -573,18 +573,13 @@ const docTemplate = `{
                 }
             }
         }
-    },
-    "securityDefinitions": {
-        "BasicAuth": {
-            "type": "basic"
-        }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "0.1",
-	Host:             "localhost:3000",
+	Host:             "g-openfiat-server.vercel.app",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Openflat Server API",
