@@ -3,9 +3,9 @@ package db
 import (
 	"errors"
 
+	"github.com/GirishBhutiya/gOpenfiatServer/app/model"
 	"github.com/datastax-ext/astra-go-sdk"
 	"github.com/google/uuid"
-	"github.com/swisscdn/OpenfiatServer/types"
 )
 
 // UserService represents a PostgreSQL implementation of myapp.UserService.
@@ -14,21 +14,21 @@ type DB struct {
 }
 
 type DatabaseService interface {
-	InserLoginRegister(otp int, usr *types.User) error
-	VerifyOTP(phoneNumber int, otp int) (types.User, error)
-	UpdateUser(usr *types.User) (types.User, error)
-	DeleteUser(usr *types.User) error
-	CreateNewOrder(order *types.Order) error
-	UpdateOrderValue(order *types.Order) error
-	ConfirmingOrder(order *types.Order) error
-	ConfirmOrder(order *types.Order) error
-	DisputedOrder(order *types.Order) error
-	GetAllOrders(usr *types.User) ([]types.Order, error)
-	DeleteOrder(order *types.Order) error
+	InserLoginRegister(otp int, usr *model.User) error
+	VerifyOTP(phoneNumber int, otp int) (model.User, error)
+	UpdateUser(usr *model.User) (model.User, error)
+	DeleteUser(usr *model.User) error
+	CreateNewOrder(order *model.Order) error
+	UpdateOrderValue(order *model.Order) error
+	ConfirmingOrder(order *model.Order) error
+	ConfirmOrder(order *model.Order) error
+	DisputedOrder(order *model.Order) error
+	GetAllOrders(usr *model.User) ([]model.Order, error)
+	DeleteOrder(order *model.Order) error
 }
 
-func (db *DB) InserLoginRegister(otp int, usr *types.User) error {
-	//var usr types.User
+func (db *DB) InserLoginRegister(otp int, usr *model.User) error {
+	//var usr model.User
 	stmt := `INSERT INTO users (phonenumber, verified, roll_id,otp) values (?, ?, ?,?) IF NOT EXISTS;`
 	rows, err := db.DB.Query(stmt, usr.PhoneNumber, false, 2, otp).Exec()
 	if err != nil {
@@ -55,8 +55,8 @@ func (db *DB) InserLoginRegister(otp int, usr *types.User) error {
 	return nil
 }
 
-func (db *DB) VerifyOTP(phoneNumber int, otp int) (types.User, error) {
-	var user types.User
+func (db *DB) VerifyOTP(phoneNumber int, otp int) (model.User, error) {
+	var user model.User
 	var motp int
 	sel := `SELECT phonenumber,verified,first_name,last_name,roll_id,profile_pic,otp FROM users WHERE phonenumber=?;`
 	rows, err := db.DB.Query(sel, phoneNumber).Exec()
@@ -92,7 +92,7 @@ func (db *DB) VerifyOTP(phoneNumber int, otp int) (types.User, error) {
 	return user, nil
 }
 
-func (db *DB) UpdateUser(usr *types.User) (types.User, error) {
+func (db *DB) UpdateUser(usr *model.User) (model.User, error) {
 
 	stmt := `UPDATE users SET first_name=?, last_name=?, profile_pic=? WHERE phonenumber=?  IF EXISTS;`
 	rows, err := db.DB.Query(stmt, usr.FirstName, usr.LastName, usr.ProfilePic, usr.PhoneNumber).Exec()
@@ -105,7 +105,7 @@ func (db *DB) UpdateUser(usr *types.User) (types.User, error) {
 
 	return *usr, nil
 }
-func (db *DB) DeleteUser(usr *types.User) error {
+func (db *DB) DeleteUser(usr *model.User) error {
 
 	stmt := `DELETE FROM users WHERE phonenumber=?  IF EXISTS;`
 	rows, err := db.DB.Query(stmt, usr.PhoneNumber).Exec()
@@ -118,9 +118,9 @@ func (db *DB) DeleteUser(usr *types.User) error {
 
 	return nil
 }
-func (db *DB) CreateNewOrder(order *types.Order) error {
+func (db *DB) CreateNewOrder(order *model.Order) error {
 	stmt := `INSERT INTO orders (id, from_phonenumber, to_phonenumber, amount, status) values (?, ?, ?, ?, ?) IF NOT EXISTS;`
-	rows, err := db.DB.Query(stmt, uuid.New(), order.FromPhone, order.ToPhone, order.Amount, types.ORDER_STATUS_PENDING).Exec()
+	rows, err := db.DB.Query(stmt, uuid.New(), order.FromPhone, order.ToPhone, order.Amount, model.ORDER_STATUS_PENDING).Exec()
 	if err != nil {
 		//log.Println("Error:", err)
 		return err
@@ -131,7 +131,7 @@ func (db *DB) CreateNewOrder(order *types.Order) error {
 
 	return nil
 }
-func (db *DB) UpdateOrderValue(order *types.Order) error {
+func (db *DB) UpdateOrderValue(order *model.Order) error {
 	stmt := `UPDATE orders SET amount =? WHERE id=?  IF EXISTS;`
 	rows, err := db.DB.Query(stmt, order.Amount, order.ID).Exec()
 	if err != nil {
@@ -144,9 +144,9 @@ func (db *DB) UpdateOrderValue(order *types.Order) error {
 
 	return nil
 }
-func (db *DB) ConfirmingOrder(order *types.Order) error {
+func (db *DB) ConfirmingOrder(order *model.Order) error {
 	stmt := `UPDATE orders SET status =? WHERE id=?  IF EXISTS;`
-	rows, err := db.DB.Query(stmt, types.ORDER_STATUS_CONFIRMING, order.ID).Exec()
+	rows, err := db.DB.Query(stmt, model.ORDER_STATUS_CONFIRMING, order.ID).Exec()
 	if err != nil {
 		//log.Println("Error:", err)
 		return err
@@ -157,9 +157,9 @@ func (db *DB) ConfirmingOrder(order *types.Order) error {
 
 	return nil
 }
-func (db *DB) ConfirmOrder(order *types.Order) error {
+func (db *DB) ConfirmOrder(order *model.Order) error {
 	stmt := `UPDATE orders SET status =? WHERE id=?  IF EXISTS;`
-	rows, err := db.DB.Query(stmt, types.ORDER_STATUS_CONFIRM, order.ID).Exec()
+	rows, err := db.DB.Query(stmt, model.ORDER_STATUS_CONFIRM, order.ID).Exec()
 	if err != nil {
 		//log.Println("Error:", err)
 		return err
@@ -170,9 +170,9 @@ func (db *DB) ConfirmOrder(order *types.Order) error {
 
 	return nil
 }
-func (db *DB) DisputedOrder(order *types.Order) error {
+func (db *DB) DisputedOrder(order *model.Order) error {
 	stmt := `UPDATE orders SET status =? WHERE id=?  IF EXISTS;`
-	rows, err := db.DB.Query(stmt, types.ORDER_STATUS_DISPUTED, order.ID).Exec()
+	rows, err := db.DB.Query(stmt, model.ORDER_STATUS_DISPUTED, order.ID).Exec()
 	if err != nil {
 		//log.Println("Error:", err)
 		return err
@@ -183,15 +183,15 @@ func (db *DB) DisputedOrder(order *types.Order) error {
 
 	return nil
 }
-func (db *DB) GetAllOrders(usr *types.User) ([]types.Order, error) {
-	var orders []types.Order
+func (db *DB) GetAllOrders(usr *model.User) ([]model.Order, error) {
+	var orders []model.Order
 	sel := `SELECT id,from_phonenumber,to_phonenumber,amount,status FROM orders WHERE from_phonenumber=? OR to_phonenumber=? ALLOW FILTERING;`
 	rows, err := db.DB.Query(sel, usr.PhoneNumber, usr.PhoneNumber).Exec()
 	if err != nil {
 		return orders, err
 	}
 	for _, r := range rows {
-		var order types.Order
+		var order model.Order
 		//vals := r.Values()
 		r.Scan(&order.ID, &order.FromPhone, &order.ToPhone, &order.Amount, &order.Status)
 		//fmt.Println("\nValues:", vals)
@@ -201,7 +201,7 @@ func (db *DB) GetAllOrders(usr *types.User) ([]types.Order, error) {
 
 	return orders, nil
 }
-func (db *DB) DeleteOrder(order *types.Order) error {
+func (db *DB) DeleteOrder(order *model.Order) error {
 
 	stmt := `DELETE FROM orders WHERE id=?  IF EXISTS;`
 	rows, err := db.DB.Query(stmt, order.ID).Exec()
