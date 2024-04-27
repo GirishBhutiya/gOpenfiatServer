@@ -3,6 +3,7 @@ package middleware
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 
@@ -23,6 +24,7 @@ func InitAuthTokenMaker(mk *token.Maker) {
 }
 
 func AuthMiddleware(next http.Handler) http.Handler {
+	log.Println("middleware")
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authorizationHeader := r.Header.Get(authorizationHeaderKey)
 

@@ -30,6 +30,7 @@ type Config struct {
 
 // LoadConfig reads configuration from file or environment variables.
 func LoadConfig(path string) (config Config, err error) {
+	log.Println("LoadConfig")
 	viper.AddConfigPath(path)
 	viper.SetConfigName("app")
 	viper.SetConfigType("env")
@@ -47,6 +48,7 @@ func LoadConfig(path string) (config Config, err error) {
 	return
 }
 func GetAstraDBSession(config Config) (*gocql.Session, error) {
+	log.Println("GetAstraDBSession")
 	cluster, err := gocqlastra.NewClusterFromURL("https://api.astra.datastax.com", config.AstraDBId, config.AstraDBApplicationToken, 10*time.Second)
 
 	if err != nil {
@@ -59,6 +61,7 @@ func GetAstraDBSession(config Config) (*gocql.Session, error) {
 
 }
 func GetAstraDBClient(config Config) (*astra.Client, error) {
+	log.Println("GetAstraDBClient")
 	c, err := astra.NewStaticTokenClient(
 		config.AstraDBApplicationToken,
 		astra.WithSecureConnectBundle(config.BundlePath),

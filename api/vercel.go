@@ -52,11 +52,13 @@ func init() {
 		db.MigrateUpDB(&db.DB{DB: client})
 	}
 	handler.InitServer(server)
+	log.Println("Vercel Init complete")
 
 }
 
 // Entrypoint
 func Handler(w http.ResponseWriter, r *http.Request) {
+	log.Println("Vercel handler")
 	//app.ServeHTTP(w, r)
 	routes.Routes(server.TokenMaker).ServeHTTP(w, r)
 }
