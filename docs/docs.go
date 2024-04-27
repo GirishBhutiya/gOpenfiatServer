@@ -579,7 +579,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "0.1",
-	Host:             "g-openfiat-server.vercel.app",
+	Host:             "api.openfiat.org",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Openflat Server API",

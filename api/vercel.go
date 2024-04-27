@@ -27,7 +27,7 @@ var (
 // @license.name  Apache 2.0
 // @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host      g-openfiat-server.vercel.app
+// @host      api.openfiat.org
 // @BasePath  /
 func init() {
 	con, err := config.LoadConfig(".")

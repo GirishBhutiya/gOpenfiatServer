@@ -82,7 +82,7 @@ definitions:
           in: boolean
         type: boolean
     type: object
-host: g-openfiat-server.vercel.app
+host: api.openfiat.org
 info:
   contact:
     email: support@openfiat.org
