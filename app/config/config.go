@@ -4,14 +4,15 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/datastax-ext/astra-go-sdk"
 	gocqlastra "github.com/datastax/gocql-astra"
 	"github.com/gocql/gocql"
-	"github.com/spf13/viper"
 )
+
+var BundlePath = "secure-connect-openfiat-test.zip"
 
 // Config stores all configuration of the application
 // The values are read by viper from a config file or environment variable
@@ -32,29 +33,43 @@ type Config struct {
 
 // LoadConfig reads configuration from file or environment variables.
 func LoadConfig(path string) (config Config, err error) {
-	ex, err := os.Executable()
+
+	accessTokenDuration, err := time.ParseDuration(os.Getenv("ACCESS_TOKEN_DURATION"))
 	if err != nil {
-		panic(err)
-	}
-	exPath := filepath.Dir(ex)
-	fmt.Println(exPath)
-	log.Println("LoadConfig")
-	viper.AddConfigPath(path)
-	viper.SetConfigName("app")
-	viper.SetConfigType("env")
-
-	viper.AutomaticEnv()
-
-	err = viper.ReadInConfig()
-
-	if err != nil {
-		log.Println("No config file found", err)
-		log.Println(err)
+		log.Println("can not parse ACCESS_TOKEN_DURATION", err)
 		return
 	}
+	refreshTokenDuration, err := time.ParseDuration(os.Getenv("REFRESH_TOKEN_DURATION"))
+	if err != nil {
+		log.Println("can not parse REFRESH_TOKEN_DURATION", err)
+		return
+	}
+	dbMigrateUp, err := strconv.ParseBool(os.Getenv("DB_MIGRATE_UP"))
+	if err != nil {
+		log.Println("can not parse DB_MIGRATE_UP", err)
+		return
+	}
+	production, err := strconv.ParseBool(os.Getenv("PRODUCTION"))
+	if err != nil {
+		log.Println("can not parse PRODUCTION", err)
+		return
+	}
+	conf := Config{
+		ListenPort:              os.Getenv("LISTEN_PORT"),
+		AccessTokenDuration:     accessTokenDuration,
+		AstraDBApplicationToken: os.Getenv("ASTRA_DB_APPLICATION_TOKEN"),
+		AstraDBAPIEndpoint:      os.Getenv("ASTRA_DB_API_ENDPOINT"),
+		AstraDBId:               os.Getenv("ASTRA_DB_ID"),
+		TokenSymmetricKey:       os.Getenv("TOKEN_SYMMETRIC_KEY"),
+		RefreshTokenDuration:    refreshTokenDuration,
+		BundlePath:              os.Getenv("BUNDLE_PATH"),
+		DatabaseKeySpace:        os.Getenv("DATABASE_KEYSPACE"),
+		DBMigrateUp:             dbMigrateUp,
+		OTPAPIURL:               os.Getenv("OTP_API_URL"),
+		Production:              production,
+	}
 
-	err = viper.Unmarshal(&config)
-	return
+	return conf, nil
 }
 func GetAstraDBSession(config Config) (*gocql.Session, error) {
 	log.Println("GetAstraDBSession")
@@ -73,7 +88,7 @@ func GetAstraDBClient(config Config) (*astra.Client, error) {
 	log.Println("GetAstraDBClient")
 	c, err := astra.NewStaticTokenClient(
 		config.AstraDBApplicationToken,
-		astra.WithSecureConnectBundle(config.BundlePath),
+		astra.WithSecureConnectBundle(BundlePath),
 		astra.WithDefaultKeyspace(config.DatabaseKeySpace),
 	)
 	if err != nil {
