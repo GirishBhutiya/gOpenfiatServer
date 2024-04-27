@@ -28,8 +28,8 @@
       }
     ],
     "functions": {
-      "app/*.go": {
-        "includeFiles": "config/secure-connect-openfiat-test.zip"
+      "api/*.go": {
+        "includeFiles": "secure-connect-openfiat-test.zip"
       }
     },
     "regions": ["bru1"]
