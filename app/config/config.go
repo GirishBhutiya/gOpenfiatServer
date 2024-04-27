@@ -3,6 +3,8 @@ package config
 import (
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/datastax-ext/astra-go-sdk"
@@ -30,6 +32,12 @@ type Config struct {
 
 // LoadConfig reads configuration from file or environment variables.
 func LoadConfig(path string) (config Config, err error) {
+	ex, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+	exPath := filepath.Dir(ex)
+	fmt.Println(exPath)
 	log.Println("LoadConfig")
 	viper.AddConfigPath(path)
 	viper.SetConfigName("app")
@@ -40,6 +48,7 @@ func LoadConfig(path string) (config Config, err error) {
 	err = viper.ReadInConfig()
 
 	if err != nil {
+		log.Println("No config file found", err)
 		log.Println(err)
 		return
 	}

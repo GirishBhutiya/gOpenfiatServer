@@ -34,6 +34,7 @@ type AuthPayload struct {
 var ser *Server
 
 func InitServer(server *Server) {
+	log.Println("InitServer")
 	ser = server
 }
 
