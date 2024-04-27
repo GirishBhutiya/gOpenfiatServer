@@ -15,18 +15,20 @@ var (
 	server *handler.Server
 )
 
-// @title WerkenServer
-// @description API Documentation for WerkenServer
-// @version 1.0
-// @schemes https http
-// @host werken-server.vercel.app
-// @BasePath /api
-// @Accept      json
-// @Produce     json
-// @securityDefinitions.apikey ApiKeyAuth
-// @in header
-// @name Authorization
-// @description Example: Bearer TOKEN
+// @title           Openflat Server API
+// @version         0.1
+// @description     This is a APIs for OpenflatServer.
+// @termsOfService
+
+// @contact.name   openfiat.org
+// @contact.url    #
+// @contact.email  support@openfiat.org
+
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host      g-openfiat-server.vercel.app
+// @BasePath  /
 func init() {
 	con, err := config.LoadConfig(".")
 	if err != nil {
