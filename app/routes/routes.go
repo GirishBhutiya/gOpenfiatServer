@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/GirishBhutiya/gOpenfiatServer/app/handler"
@@ -17,7 +16,6 @@ import (
 )
 
 func Routes(tokenMaker token.Maker) http.Handler {
-	log.Println("Routes")
 	mux := chi.NewRouter()
 
 	//specify who is allowed to connect

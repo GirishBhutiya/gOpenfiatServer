@@ -72,7 +72,6 @@ func LoadConfig(path string) (config Config, err error) {
 	return conf, nil
 }
 func GetAstraDBSession(config Config) (*gocql.Session, error) {
-	log.Println("GetAstraDBSession")
 	cluster, err := gocqlastra.NewClusterFromURL("https://api.astra.datastax.com", config.AstraDBId, config.AstraDBApplicationToken, 10*time.Second)
 
 	if err != nil {
@@ -85,7 +84,6 @@ func GetAstraDBSession(config Config) (*gocql.Session, error) {
 
 }
 func GetAstraDBClient(config Config) (*astra.Client, error) {
-	log.Println("GetAstraDBClient")
 	c, err := astra.NewStaticTokenClient(
 		config.AstraDBApplicationToken,
 		astra.WithSecureConnectBundle(BundlePath),

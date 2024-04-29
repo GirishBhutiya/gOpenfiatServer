@@ -23,7 +23,7 @@ func CheckPasswordValidity(password string) bool {
 	return true
 }
 func SendOTP(phonenumber int, config *config.Config) ([]byte, error) {
-	resp, err := http.Get(fmt.Sprintf(config.OTPAPIURL, fmt.Sprintf("%s%d", "+", phonenumber)))
+	resp, err := http.Get(fmt.Sprintf(config.OTPAPIURL, fmt.Sprintf("%s%d", "+91", phonenumber)))
 	if err != nil {
 		log.Fatalln(err)
 		return nil, err
