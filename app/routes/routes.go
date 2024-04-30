@@ -36,6 +36,7 @@ func Routes(tokenMaker token.Maker) http.Handler {
 	//mux.Post("/login", app.Login)
 	mux.Post("/register", handler.Register)
 	mux.Post("/verifyotp", handler.VerifyOTP)
+	mux.Post("/renew-accesstoken", handler.RenewAccessToken)
 
 	middleware.InitAuthTokenMaker(&tokenMaker)
 
@@ -50,7 +51,6 @@ func Routes(tokenMaker token.Maker) http.Handler {
 		mux.Post("/order-disputed", handler.DisputedOrder)
 		mux.Post("/order-delete", handler.DeleteOrder)
 		mux.Post("/allorders", handler.GetUserAllOrders)
-		mux.Post("/renew-accesstoken", handler.RenewAccessToken)
 
 	})
 	//SwaggerRequest(mux)
