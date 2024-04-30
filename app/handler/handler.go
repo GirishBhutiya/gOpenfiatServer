@@ -214,7 +214,7 @@ func VerifyOTP(w http.ResponseWriter, r *http.Request) {
 	res.AccessToken = accessToken
 	res.AccessTokenExpiresAt = accessPayload.ExpiredAt
 	res.RefreshToken = refreshToken
-	res.AccessTokenExpiresAt = refreshPayload.ExpiredAt
+	res.RefreshTokenExpiresAt = refreshPayload.ExpiredAt
 	res.User = user
 
 	WriteJSON(w, http.StatusOK, res)
