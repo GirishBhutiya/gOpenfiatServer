@@ -37,6 +37,15 @@ func InitServer(server *Server) {
 	ser = server
 }
 
+type renewAccessTokenRequests struct {
+	RefreshToken string `json:"refresh_token" binding:"required"`
+}
+
+type renewAccessTokenResponse struct {
+	AccessToken          string    `json:"access_token"`
+	AccessTokenExpiresAt time.Time `json:"access_token_expires_at"`
+}
+
 /*
 	 type UserResponse struct {
 		PhoneNumber int    `json:"phonenumber"`
@@ -48,11 +57,13 @@ func InitServer(server *Server) {
 	}
 */
 type LoginResponse struct {
-	User                 model.User `json:"user"`
-	AccessToken          string     `json:"access_token"`
-	AccessTokenExpiresAt time.Time  `json:"access_token_expires_at"`
-	Authenticated        bool       `json:"authenticated"`
-	ErrorMessage         string     `json:"message"`
+	User                  model.User `json:"user"`
+	AccessToken           string     `json:"access_token"`
+	AccessTokenExpiresAt  time.Time  `json:"access_token_expires_at"`
+	RefreshToken          string     `json:"refresh_token"`
+	RefreshTokenExpiresAt time.Time  `json:"refresh_token_expires_at"`
+	Authenticated         bool       `json:"authenticated"`
+	ErrorMessage          string     `json:"message"`
 }
 type OTPResponse struct {
 	Status  string `json:"status"`
@@ -192,11 +203,18 @@ func VerifyOTP(w http.ResponseWriter, r *http.Request) {
 		ErrorJSON(w, err)
 		return
 	}
-
+	refreshToken, refreshPayload, err := ser.TokenMaker.CreateToken(payload.PhoneNumber, ser.Config.RefreshTokenDuration)
+	if err != nil {
+		log.Println(err)
+		ErrorJSON(w, err)
+		return
+	}
 	var res LoginResponse
 	res.Authenticated = true
 	res.AccessToken = accessToken
 	res.AccessTokenExpiresAt = accessPayload.ExpiredAt
+	res.RefreshToken = refreshToken
+	res.AccessTokenExpiresAt = refreshPayload.ExpiredAt
 	res.User = user
 
 	WriteJSON(w, http.StatusOK, res)
@@ -649,4 +667,41 @@ func GetUserAllOrders(w http.ResponseWriter, r *http.Request) {
 	payload.Message = "Order Deleted"
 
 	WriteJSON(w, http.StatusOK, orders)
+}
+func RenewAccessToken(w http.ResponseWriter, r *http.Request) {
+	var req renewAccessTokenRequests
+	err := ReadJSON(w, r, &req)
+	if err != nil {
+		log.Println(err)
+		ErrorJSON(w, err)
+		return
+	}
+
+	refreshPayload, err := ser.TokenMaker.VerifyToken(req.RefreshToken)
+	if err != nil {
+		ErrorJSON(w, err, http.StatusUnauthorized)
+		return
+	}
+
+	if time.Now().After(refreshPayload.ExpiredAt) {
+
+		ErrorJSON(w, err, http.StatusUnauthorized)
+		return
+	}
+
+	accessToken, accessPayload, err := ser.TokenMaker.CreateToken(
+		refreshPayload.PhoneNumber,
+		ser.Config.AccessTokenDuration,
+	)
+	if err != nil {
+		ErrorJSON(w, err, http.StatusInternalServerError)
+		return
+	}
+
+	rsp := renewAccessTokenResponse{
+		AccessToken:          accessToken,
+		AccessTokenExpiresAt: accessPayload.ExpiredAt,
+	}
+
+	WriteJSON(w, http.StatusOK, rsp)
 }

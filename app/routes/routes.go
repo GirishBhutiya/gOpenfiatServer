@@ -50,6 +50,7 @@ func Routes(tokenMaker token.Maker) http.Handler {
 		mux.Post("/order-disputed", handler.DisputedOrder)
 		mux.Post("/order-delete", handler.DeleteOrder)
 		mux.Post("/allorders", handler.GetUserAllOrders)
+		mux.Post("/renew-accesstoken", handler.RenewAccessToken)
 
 	})
 	//SwaggerRequest(mux)
