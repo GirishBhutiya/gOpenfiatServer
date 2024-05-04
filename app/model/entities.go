@@ -1,6 +1,10 @@
 package model
 
-import "github.com/google/uuid"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 var (
 	// Constants for the order status
@@ -8,10 +12,44 @@ var (
 	ORDER_STATUS_CONFIRM    = "confirm"
 	ORDER_STATUS_DISPUTED   = "disputed"
 	ORDER_STATUS_CONFIRMING = "confirming"
+	ORDER_TYPE_BUY          = "buy"
+	ORDER_TYPE_SELL         = "sell"
 )
+
+// swagger:model UserLogin
+type UserLogin struct {
+	// phonenumber of the user
+	// in: integer
+	PhoneNumber int `json:"phonenumber,omitempty"`
+}
 
 // swagger:model User
 type User struct {
+	// id of the user
+	// in: integer
+	ID uuid.UUID `json:"userid,omitempty"`
+	// phonenumber of the user
+	// in: integer
+	PhoneNumber int `json:"phonenumber,omitempty"`
+	// first name of the user
+	// in: string
+	FirstName string `json:"first_name,omitempty"`
+	// last name of the user
+	// in: string
+	LastName string `json:"last_name,omitempty"`
+	//Is users phone number verified
+	// in: boolean
+	Verified bool `json:"verified"`
+	// roll of the user admin or user
+	// in: integer
+	Groups map[uuid.UUID]string `json:"groups"`
+	// profile pic link of the user
+	// in: string
+	ProfilePic string `json:"profile_pic"`
+}
+
+// swagger:model User
+type UserHandler struct {
 	// phonenumber of the user
 	// in: integer
 	PhoneNumber int `json:"phonenumber,omitempty"`
@@ -32,23 +70,110 @@ type User struct {
 	ProfilePic string `json:"profile_pic"`
 }
 
-type Order struct {
+type GroupUser struct {
+	// id of the group
+	// in: uuid
+	ID uuid.UUID `json:"groupid"`
+	// name of the group
+	// in: string
+	Name string `json:"groupname"`
+}
+
+// swagger:model CreateGroup
+type CreateGroup struct {
+	// name of the group
+	// in: string
+	Name string `json:"groupname"`
+}
+type GroupHandler struct {
+	ID            uuid.UUID `json:"groupid"`
+	Name          string    `json:"name"`
+	CreatorUserid uuid.UUID `json:"createruserid"`
+	CreateTime    time.Time `json:"createtime"`
+}
+type OrderHandler struct {
+	ID         uuid.UUID `json:"orderid"`
+	UserId     uuid.UUID `json:"userid"`
+	FiatAmount float32   `json:"fiatAmount,omitempty"`
+	MinAmount  float32   `json:"minAmount,omitempty"`
+	Price      float32   `json:"price,omitempty"`
+	TimeLimit  time.Time `json:"timeLimit,omitempty"`
+	Type       string    `json:"type"`
+}
+type OrderHandlerString struct {
+	ID         uuid.UUID `json:"orderid"`
+	UserId     uuid.UUID `json:"userid"`
+	FiatAmount float32   `json:"fiatAmount,omitempty"`
+	MinAmount  float32   `json:"minAmount,omitempty"`
+	Price      float32   `json:"price,omitempty"`
+	TimeLimit  string    `json:"timeLimit,omitempty"`
+	Type       string    `json:"type"`
+}
+
+// swagger:model OrderUser
+type OrderUser struct {
+	// id of the order
+	// in: uuid
+	ID uuid.UUID `json:"orderid"`
+}
+
+/* type OrderHandler struct {
 	// id of the order
 	// in: uuid
 	ID uuid.UUID `json:"id"`
 	// phonenumber of the user who placed the order
 	// in: integer
-	FromPhone int `json:"from_phonenumber,omitempty"`
-	// phonenumber of the user who is receiving the order
+	Phonenumber int `json:"phonenumber,omitempty"`
+	// flat amount of the order
 	// in: integer
-	ToPhone int `json:"to_phonenumber,omitempty"`
-	// amount of the order
+	FlatAmount float32 `json:"flat_amount,omitempty"`
+	// minimum amount of the order
 	// in: integer
-	Amount float32 `json:"amount,omitempty"`
+	MinAmount float32 `json:"min_amount,omitempty"`
+	// price of the order
+	// in: integer
+	Price float32 `json:"price,omitempty"`
 	// status of the order
 	// in: string
 	Status string `json:"status"`
-	/* // time of the order
+	// time limit of the order
 	// in: string
-	Time string `json:"time"` */
+	TimeLimit string `json:"time_limit"`
+	//type of the order buy/sell
+	// in: string
+	OrderType string `json:"order_type"`
+}
+type Order struct {
+	// id of the order
+	// in: uuid
+	ID uuid.UUID `json:"id"`
+	// amount of the order
+	// in: integer
+	MinAmount float32 `json:"min_amount,omitempty"`
+	// time limit of the order
+	// in: string
+	TimeLimit string `json:"time_limit"`
+}
+*/
+
+type TradeHandler struct {
+	ID        uuid.UUID `json:"tradeid"`
+	Orderid   uuid.UUID `json:"orderid"`
+	BidUserid uuid.UUID `json:"bidUserid"`
+	TradeTime time.Time `json:"tradetime"`
+	Status    string    `json:"status"`
+	Method    string    `json:"method"`
+}
+type TradeHandlerUser struct {
+	ID        uuid.UUID `json:"tradeid"`
+	Orderid   uuid.UUID `json:"orderid"`
+	TradeTime string    `json:"tradetime"`
+	Method    string    `json:"method"`
+}
+
+// swagger:model CreateGroup
+type TradeUser struct {
+	// id of the trade
+	// in: uuid
+	ID uuid.UUID `json:"tradeid"`
 }

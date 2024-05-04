@@ -1,9 +1,9 @@
 package middleware
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 
@@ -24,7 +24,6 @@ func InitAuthTokenMaker(mk *token.Maker) {
 }
 
 func AuthMiddleware(next http.Handler) http.Handler {
-	log.Println("middleware")
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authorizationHeader := r.Header.Get(authorizationHeaderKey)
 
@@ -48,12 +47,14 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 		accessToken := fields[1]
 
-		_, err := maker.VerifyToken(accessToken)
+		payload, err := maker.VerifyToken(accessToken)
 		if err != nil {
 			handler.ErrorJSON(w, err, http.StatusUnauthorized)
 			return
 		}
-
+		//log.Println("middleware", payload.UserId)
+		ctx := context.WithValue(r.Context(), handler.UserIDKey, payload.UserId)
+		r = r.WithContext(ctx)
 		/*out, err := json.Marshal(payload)
 		if err != nil {
 			app.errorJSON(w, err, http.StatusUnauthorized)

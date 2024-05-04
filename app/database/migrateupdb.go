@@ -8,55 +8,47 @@ import (
 func MigrateUpDB(db *DB) {
 
 	var dropUserDB = db.DB.Query(`DROP TABLE IF EXISTS users`)
-	var dropRollDB = db.DB.Query(`DROP TABLE IF EXISTS roll`)
 	var dropOrdersDB = db.DB.Query(`DROP TABLE IF EXISTS orders`)
-	var createUserDB = db.DB.Query(`CREATE TABLE IF NOT EXISTS users ( phonenumber bigint PRIMARY KEY, verified boolean, first_name text,last_name text, roll_id int, profile_pic text, otp int);`)
-	var createOrdersDB = db.DB.Query(`CREATE TABLE IF NOT EXISTS orders (id uuid PRIMARY KEY, from_phonenumber bigint, to_phonenumber bigint, amount float, status text);`)
-	var createRollDB = db.DB.Query(`CREATE TABLE IF NOT EXISTS roll ( id int PRIMARY KEY, roll text);`)
-	var addAdminRoll = db.DB.Query(`INSERT INTO roll(id,roll) VALUES (1,'admin');`)
-	var addUserRoll = db.DB.Query(`INSERT INTO roll(id,roll) VALUES (2,'user');`)
+	var dropGroupDB = db.DB.Query(`DROP TABLE IF EXISTS group`)
+	var dropTradeDB = db.DB.Query(`DROP TABLE IF EXISTS trade`)
+	var createUserDB = db.DB.Query(`CREATE TABLE IF NOT EXISTS users ( userid uuid PRIMARY KEY,phonenumber bigint, verified boolean, first_name text,last_name text, groups map<uuid, text>, profile_pic text, otp int);`)
+	var createOrderDB = db.DB.Query(`CREATE TABLE IF NOT EXISTS orders (orderid uuid PRIMARY KEY, userid uuid, fiatAmount float, minAmount float, price float,timeLimit timestamp, type text);`)
+	var createGroupDB = db.DB.Query(`CREATE TABLE IF NOT EXISTS group( groupid uuid PRIMARY KEY, groupname text, creatorUserid uuid,createtime timestamp);`)
+	var createTradeDB = db.DB.Query(`CREATE TABLE IF NOT EXISTS trade( tradeid uuid PRIMARY KEY, orderid uuid, bidUserid uuid,tradetime timestamp,status text, method text);`)
 
 	fmt.Println("Dropping the tables now")
-	_, err := dropOrdersDB.Exec()
+	_, err := dropUserDB.Exec()
 	if err != nil {
 		log.Fatal(err)
 	}
-	_, err = dropUserDB.Exec()
+	_, err = dropOrdersDB.Exec()
 	if err != nil {
 		log.Fatal(err)
 	}
-	_, err = dropRollDB.Exec()
+	_, err = dropGroupDB.Exec()
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, err = dropTradeDB.Exec()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Println("Creating the tables now")
-	_, err = createRollDB.Exec()
-	if err != nil {
-		log.Fatal(err)
-	}
 	_, err = createUserDB.Exec()
 	if err != nil {
 		log.Fatal(err)
 	}
-	_, err = createOrdersDB.Exec()
+	_, err = createOrderDB.Exec()
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	fmt.Println("Insering the data into tables now")
-	err = db.DB.Batch(addAdminRoll, addUserRoll).Exec()
+	_, err = createGroupDB.Exec()
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	rows, err := db.DB.Query("select * FROM roll;").Exec()
+	_, err = createTradeDB.Exec()
 	if err != nil {
-		fmt.Println(err)
-	}
-
-	for _, r := range rows {
-		vals := r.Values()
-		fmt.Println("Values:", vals)
+		log.Fatal(err)
 	}
 }

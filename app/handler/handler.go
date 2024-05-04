@@ -9,10 +9,10 @@ import (
 	"time"
 
 	"github.com/GirishBhutiya/gOpenfiatServer/app/config"
+	db "github.com/GirishBhutiya/gOpenfiatServer/app/database"
 	"github.com/GirishBhutiya/gOpenfiatServer/app/model"
 	"github.com/GirishBhutiya/gOpenfiatServer/app/token"
 	util "github.com/GirishBhutiya/gOpenfiatServer/app/util"
-	"github.com/GirishBhutiya/gOpenfiatServer/db"
 	"github.com/google/uuid"
 )
 
@@ -30,6 +30,9 @@ type AuthPayload struct {
 	// in: integer
 	OTP int `json:"otp"`
 }
+type contextKey string
+
+const UserIDKey contextKey = "userid"
 
 var ser *Server
 
@@ -100,12 +103,12 @@ func Brocker(w http.ResponseWriter, r *http.Request) {
 // @Tags			User
 // @Accept			json
 // @Produce			json
-// @Param user body model.User true "User"
+// @Param user body model.UserLogin true "jsonResponse"
 // @Success 200 {object} jsonResponse
 // @Failure 401 {object} jsonResponse
 // @Router /register [post]
 func Register(w http.ResponseWriter, r *http.Request) {
-	var user model.User
+	var user model.UserLogin
 
 	err := ReadJSON(w, r, &user)
 	if err != nil {
@@ -147,7 +150,6 @@ func Register(w http.ResponseWriter, r *http.Request) {
 
 	//Insert to database
 	err = ser.Store.InserLoginRegister(otpRes.OTP, &user)
-	//err = app.Store.InserLoginRegister(otpRes.OTP, &user)
 	if err != nil {
 		log.Println(err)
 		ErrorJSON(w, err)
@@ -159,22 +161,20 @@ func Register(w http.ResponseWriter, r *http.Request) {
 
 	WriteJSON(w, http.StatusOK, payload)
 
-	//WriteJSON(w, http.StatusAccepted, res)
-
 }
 
-// VerifyOTP
+// Login
 // This API used to verify OTP which you get after register
-// @Summary		Verify OTP
+// @Summary		Login
 // @Description		Verify OTP which you get after register
 // @Accept			json
 // @Produce			json
-// @Param			payload		body		AuthPayload	true	"payload"
+// @Param			payload		body		AuthPayload	true	"LoginResponse"
 // @Tags			Auth
 // @Success			200		{object}	jsonResponse
 // @Failure 401 {object} jsonResponse
-// @Router /verifyotp [post]
-func VerifyOTP(w http.ResponseWriter, r *http.Request) {
+// @Router /login [post]
+func Login(w http.ResponseWriter, r *http.Request) {
 
 	var payload AuthPayload
 
@@ -191,19 +191,19 @@ func VerifyOTP(w http.ResponseWriter, r *http.Request) {
 		ErrorJSON(w, errors.New("please enter valid phonenumber"))
 		return
 	}
-	user, err := ser.Store.VerifyOTP(payload.PhoneNumber, payload.OTP)
+	user, err := ser.Store.Login(payload.PhoneNumber, payload.OTP)
 	if err != nil {
 		log.Println(err)
 		ErrorJSON(w, err)
 		return
 	}
-	accessToken, accessPayload, err := ser.TokenMaker.CreateToken(payload.PhoneNumber, ser.Config.AccessTokenDuration)
+	accessToken, accessPayload, err := ser.TokenMaker.CreateToken(user.ID, ser.Config.AccessTokenDuration)
 	if err != nil {
 		log.Println(err)
 		ErrorJSON(w, err)
 		return
 	}
-	refreshToken, refreshPayload, err := ser.TokenMaker.CreateToken(payload.PhoneNumber, ser.Config.RefreshTokenDuration)
+	refreshToken, refreshPayload, err := ser.TokenMaker.CreateToken(user.ID, ser.Config.RefreshTokenDuration)
 	if err != nil {
 		log.Println(err)
 		ErrorJSON(w, err)
@@ -228,7 +228,7 @@ func VerifyOTP(w http.ResponseWriter, r *http.Request) {
 // @Tags User
 // @Accept  json
 // @Produce  json
-// @Param user body model.User true "User"
+// @Param user body model.User true "jsonResponse"
 // @Success 200 {object} jsonResponse
 // @Failure 401 {object} jsonResponse
 // @Router /user/update [post]
@@ -241,12 +241,12 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		ErrorJSON(w, err)
 		return
 	}
-	//fmt.Println("Phone is:", user.PhoneNumber)
-	//TODO: send OTP
-	if util.LenLoop(user.PhoneNumber) < 10 {
-		ErrorJSON(w, errors.New("please enter valid phonenumber"))
+	userid, ok := r.Context().Value(UserIDKey).(uuid.UUID)
+	if !ok {
+		ErrorJSON(w, errors.New("can not get userid"))
 		return
 	}
+	user.ID = userid
 	//Update to database
 	_, err = ser.Store.UpdateUser(&user)
 	if err != nil {
@@ -264,35 +264,31 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// DeleteUser deletes a user
-// This API is used to delete a user
-// @Summary Delete User
-// @Description Delete a user
+// SubscribeGroupToUSer : subscribe to group
+// This API is used to subscribe to group
+// @Summary Subscribe Group To USer
+// @Description This API is used to subscribe to group
 // @Tags User
 // @Accept  json
 // @Produce  json
-// @Param user body model.User true "User"
+// @Param user body model.GroupUser true "jsonResponse"
 // @Success 200 {object} jsonResponse
 // @Failure 401 {object} jsonResponse
-// @Router /user/delete [post]
-func DeleteUser(w http.ResponseWriter, r *http.Request) {
-	var user model.User
-
-	err := ReadJSON(w, r, &user)
+// @Router /user/subscribe [post]
+func SubscribeGroupToUSer(w http.ResponseWriter, r *http.Request) {
+	var group model.GroupUser
+	err := ReadJSON(w, r, &group)
 	if err != nil {
 		log.Println(err)
 		ErrorJSON(w, err)
 		return
 	}
-	if util.LenLoop(user.PhoneNumber) < 10 {
-		ErrorJSON(w, errors.New("please enter valid phonenumber"))
+	userid, ok := r.Context().Value(UserIDKey).(uuid.UUID)
+	if !ok {
+		ErrorJSON(w, errors.New("can not get userid"))
 		return
 	}
-	//fmt.Println("Phone is:", user.PhoneNumber)
-	//TODO: send OTP
-
-	//Update to database
-	err = ser.Store.DeleteUser(&user)
+	err = ser.Store.SubscribeGroupToUSer(userid, group)
 	if err != nil {
 		log.Println(err)
 		ErrorJSON(w, err)
@@ -300,27 +296,171 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 	var payload jsonResponse
 	payload.Error = false
-	payload.Message = "Account Deleted"
+	payload.Message = "User Updated"
+
+	WriteJSON(w, http.StatusOK, payload)
+}
+
+// UnsubscribeGroupToUSer : unsubscribe to group
+// This API is used to unsubscribe to group
+// @Summary Unsubscribe Group To USer
+// @Description This API is used to unsubscribe to group
+// @Tags User
+// @Accept  json
+// @Produce  json
+// @Param user body model.GroupUser true "jsonResponse"
+// @Success 200 {object} jsonResponse
+// @Failure 401 {object} jsonResponse
+// @Router /user/unsubscribe [post]
+func UnsubscribeGroupToUSer(w http.ResponseWriter, r *http.Request) {
+	var group model.GroupUser
+	err := ReadJSON(w, r, &group)
+	if err != nil {
+		log.Println(err)
+		ErrorJSON(w, err)
+		return
+	}
+	userid, ok := r.Context().Value(UserIDKey).(uuid.UUID)
+	if !ok {
+		ErrorJSON(w, errors.New("can not get userid"))
+		return
+	}
+	err = ser.Store.UnsubscribeGroupToUSer(userid, group)
+	if err != nil {
+		log.Println(err)
+		ErrorJSON(w, err)
+		return
+	}
+	var payload jsonResponse
+	payload.Error = false
+	payload.Message = "user unsubscribed to group"
+
+	WriteJSON(w, http.StatusOK, payload)
+}
+
+// CreateGroup : create a new group
+// This API is used to create a new group
+// @Summary Create A New Group
+// @Description This API is used to create a new group
+// @Tags Group
+// @Accept  json
+// @Produce  json
+// @Param user body model.CreateGroup true "jsonResponse"
+// @Success 200 {object} jsonResponse
+// @Failure 401 {object} jsonResponse
+// @Router /user/create-group [post]
+func CreateGroup(w http.ResponseWriter, r *http.Request) {
+	var group model.CreateGroup
+
+	err := ReadJSON(w, r, &group)
+	if err != nil {
+		log.Println(err)
+		ErrorJSON(w, err)
+		return
+	}
+
+	userid, ok := r.Context().Value(UserIDKey).(uuid.UUID)
+	if !ok {
+		ErrorJSON(w, errors.New("can not get userid"))
+		return
+	}
+	err = ser.Store.CreateNewGroup(userid, group)
+	if err != nil {
+		log.Println(err)
+		ErrorJSON(w, err)
+		return
+	}
+	var payload jsonResponse
+	payload.Error = false
+	payload.Message = "group created"
 
 	WriteJSON(w, http.StatusOK, payload)
 
-	//WriteJSON(w, http.StatusAccepted, res)
+}
+
+// UpdateGroup : update group
+// This API is used to update group
+// @Summary Update Group
+// @Description This API is used to update group
+// @Tags Group
+// @Accept  json
+// @Produce  json
+// @Param user body model.GroupUser true "jsonResponse"
+// @Success 200 {object} jsonResponse
+// @Failure 401 {object} jsonResponse
+// @Router /user/update-group [post]
+func UpdateGroup(w http.ResponseWriter, r *http.Request) {
+	var group model.GroupUser
+
+	err := ReadJSON(w, r, &group)
+	if err != nil {
+		log.Println(err)
+		ErrorJSON(w, err)
+		return
+	}
+
+	err = ser.Store.UpdateGroup(group)
+	if err != nil {
+		log.Println(err)
+		ErrorJSON(w, err)
+		return
+	}
+	var payload jsonResponse
+	payload.Error = false
+	payload.Message = "group updated"
+
+	WriteJSON(w, http.StatusOK, payload)
 
 }
 
-// CreateOrder : Create a new order
-// CreateOrder : Create a new order with status pending
-// @Summary Create a new order
-// @Description Create a new order with status pending
+// DeleteGroup : delete group
+// This API is used to delete group
+// @Summary Delete Group
+// @Description This API is used to delete group
+// @Tags Group
+// @Accept  json
+// @Produce  json
+// @Param user body model.GroupUser true "jsonResponse"
+// @Success 200 {object} jsonResponse
+// @Failure 401 {object} jsonResponse
+// @Router /user/delete-group [post]
+func DeleteGroup(w http.ResponseWriter, r *http.Request) {
+	var group model.GroupUser
+
+	err := ReadJSON(w, r, &group)
+	if err != nil {
+		log.Println(err)
+		ErrorJSON(w, err)
+		return
+	}
+
+	err = ser.Store.DeleteGroup(group)
+	if err != nil {
+		log.Println(err)
+		ErrorJSON(w, err)
+		return
+	}
+	var payload jsonResponse
+	payload.Error = false
+	payload.Message = "group deleted"
+
+	WriteJSON(w, http.StatusOK, payload)
+
+}
+
+// CreateBuyOrder : Create a new buy order
+// CreateBuyOrder : Create a new order with status pending and type buy
+// @Summary Create a new buy order
+// @Description Create a new order with status pending and type buy
 // @Tags Order
 // @Accept  json
 // @Produce  json
-// @Param order body model.Order true "Order"
+// @Param order body model.OrderHandler true "jsonResponse"
 // @Success 200 {object} jsonResponse
 // @Failure 401 {object} jsonResponse
-// @Router /user/create-order [post]
-func CreateOrder(w http.ResponseWriter, r *http.Request) {
-	var order model.Order
+// @Router /user/create-buy-order [post]
+func CreateBuyOrder(w http.ResponseWriter, r *http.Request) {
+	var order model.OrderHandlerString
 
 	err := ReadJSON(w, r, &order)
 	if err != nil {
@@ -328,24 +468,18 @@ func CreateOrder(w http.ResponseWriter, r *http.Request) {
 		ErrorJSON(w, err)
 		return
 	}
-
-	if order.Amount == 0 {
-		log.Println(err)
-		ErrorJSON(w, errors.New("amount value 0"))
+	userid, ok := r.Context().Value(UserIDKey).(uuid.UUID)
+	if !ok {
+		ErrorJSON(w, errors.New("can not get userid"))
 		return
 	}
-
-	if order.FromPhone == 0 || util.LenLoop(order.FromPhone) < 10 {
+	or, err := util.ConvertOrderStringToOrder(&order)
+	if err != nil {
 		log.Println(err)
-		ErrorJSON(w, errors.New("please check from phone number"))
+		ErrorJSON(w, err)
 		return
 	}
-	if order.ToPhone == 0 || util.LenLoop(order.ToPhone) < 10 {
-		log.Println(err)
-		ErrorJSON(w, errors.New("please check to phonenumber"))
-		return
-	}
-	err = ser.Store.CreateNewOrder(&order)
+	err = ser.Store.CreateNewOrder(userid, model.ORDER_TYPE_BUY, &or)
 	if err != nil {
 		log.Println(err)
 		ErrorJSON(w, err)
@@ -356,22 +490,21 @@ func CreateOrder(w http.ResponseWriter, r *http.Request) {
 	payload.Message = "Order Created"
 
 	WriteJSON(w, http.StatusOK, payload)
-
 }
 
-// UpdateOrderValue godoc
-// This Api is used to update the order amount
-// @Summary Update Order Value
-// @Description This Api is used to update the order amount
+// CreateSellOrder : Create a new sell order
+// CreateSellOrder : Create a new order with status pending and type sell
+// @Summary Create a new sell order
+// @Description Create a new order with status pending and type sell
 // @Tags Order
 // @Accept  json
 // @Produce  json
-// @Param order body model.Order true "Order"
+// @Param order body model.OrderHandler true "jsonResponse"
 // @Success 200 {object} jsonResponse
 // @Failure 401 {object} jsonResponse
-// @Router /user/update-ordervalue [post]
-func UpdateOrderValue(w http.ResponseWriter, r *http.Request) {
-	var order model.Order
+// @Router /user/create-sell-order [post]
+func CreateSellOrder(w http.ResponseWriter, r *http.Request) {
+	var order model.OrderHandlerString
 
 	err := ReadJSON(w, r, &order)
 	if err != nil {
@@ -379,27 +512,57 @@ func UpdateOrderValue(w http.ResponseWriter, r *http.Request) {
 		ErrorJSON(w, err)
 		return
 	}
-	if order.ID == uuid.Nil {
-		log.Println(err)
-		ErrorJSON(w, errors.New("order id not found"))
+	userid, ok := r.Context().Value(UserIDKey).(uuid.UUID)
+	if !ok {
+		ErrorJSON(w, errors.New("can not get userid"))
 		return
 	}
-	if order.Amount == 0 {
+	or, err := util.ConvertOrderStringToOrder(&order)
+	if err != nil {
 		log.Println(err)
-		ErrorJSON(w, errors.New("amount value 0"))
+		ErrorJSON(w, err)
 		return
 	}
-	if order.FromPhone == 0 || util.LenLoop(order.FromPhone) < 10 {
+	err = ser.Store.CreateNewOrder(userid, model.ORDER_TYPE_SELL, &or)
+	if err != nil {
 		log.Println(err)
-		ErrorJSON(w, errors.New("please check from phonenumber"))
+		ErrorJSON(w, err)
 		return
 	}
-	if order.ToPhone == 0 || util.LenLoop(order.ToPhone) < 10 {
+	var payload jsonResponse
+	payload.Error = false
+	payload.Message = "Order Created"
+
+	WriteJSON(w, http.StatusOK, payload)
+}
+
+// UpdateOrder godoc
+// This Api is used to update the order
+// @Summary Update Order Value
+// @Description This Api is used to update the order
+// @Tags Order
+// @Accept  json
+// @Produce  json
+// @Param order body model.OrderHandler true "jsonResponse"
+// @Success 200 {object} jsonResponse
+// @Failure 401 {object} jsonResponse
+// @Router /user/update-order [post]
+func UpdateOrder(w http.ResponseWriter, r *http.Request) {
+	var order model.OrderHandlerString
+
+	err := ReadJSON(w, r, &order)
+	if err != nil {
 		log.Println(err)
-		ErrorJSON(w, errors.New("please check to phonenumber"))
+		ErrorJSON(w, err)
 		return
 	}
-	err = ser.Store.UpdateOrderValue(&order)
+	or, err := util.ConvertOrderStringToOrder(&order)
+	if err != nil {
+		log.Println(err)
+		ErrorJSON(w, err)
+		return
+	}
+	err = ser.Store.UpdateOrder(&or)
 	if err != nil {
 		log.Println(err)
 		ErrorJSON(w, err)
@@ -413,168 +576,6 @@ func UpdateOrderValue(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// ConfirmingOrder godoc
-// This Api is used to change the order status to confirming
-// @Summary ConfirmingOrder
-// @Description This Apis is used to change the order status to confirming
-// @Tags Order
-// @Accept  json
-// @Produce  json
-// @Param order body model.Order true "Order"
-// @Success 200 {object} jsonResponse
-// @Failure 401 {object} jsonResponse
-// @Router /user/order-confirming [post]
-func ConfirmingOrder(w http.ResponseWriter, r *http.Request) {
-	var order model.Order
-
-	err := ReadJSON(w, r, &order)
-	if err != nil {
-		log.Println(err)
-		ErrorJSON(w, err)
-		return
-	}
-	if order.ID == uuid.Nil {
-		log.Println(err)
-		ErrorJSON(w, errors.New("order id not found"))
-		return
-	}
-	if order.Amount == 0 {
-		log.Println(err)
-		ErrorJSON(w, errors.New("amount value 0"))
-		return
-	}
-	if order.FromPhone == 0 || util.LenLoop(order.FromPhone) < 10 {
-		log.Println(err)
-		ErrorJSON(w, errors.New("please check from phonenumber"))
-		return
-	}
-	if order.ToPhone == 0 || util.LenLoop(order.ToPhone) < 10 {
-		log.Println(err)
-		ErrorJSON(w, errors.New("please check to phonenumber"))
-		return
-	}
-	err = ser.Store.ConfirmingOrder(&order)
-	if err != nil {
-		log.Println(err)
-		ErrorJSON(w, err)
-		return
-	}
-	var payload jsonResponse
-	payload.Error = false
-	payload.Message = "Order status changed to confirming"
-
-	WriteJSON(w, http.StatusOK, payload)
-
-}
-
-// ConfirmOrder godoc
-// This Api is used to change the order status to confirm
-// @Summary ConfirmOrder
-// @Description This Api is used to change the order status to confirm
-// @Tags Order
-// @Accept  json
-// @Produce  json
-// @Param order body model.Order true "Order"
-// @Success 200 {object} jsonResponse
-// @Failure 401 {object} jsonResponse
-// @Router /user/order-confirm [post]
-func ConfirmOrder(w http.ResponseWriter, r *http.Request) {
-	var order model.Order
-
-	err := ReadJSON(w, r, &order)
-	if err != nil {
-		log.Println(err)
-		ErrorJSON(w, err)
-		return
-	}
-	if order.ID == uuid.Nil {
-		log.Println(err)
-		ErrorJSON(w, errors.New("order id not found"))
-		return
-	}
-	if order.Amount == 0 {
-		log.Println(err)
-		ErrorJSON(w, errors.New("amount value 0"))
-		return
-	}
-	if order.FromPhone == 0 || util.LenLoop(order.FromPhone) < 10 {
-		log.Println(err)
-		ErrorJSON(w, errors.New("please check from phonenumber"))
-		return
-	}
-	if order.ToPhone == 0 || util.LenLoop(order.ToPhone) < 10 {
-		log.Println(err)
-		ErrorJSON(w, errors.New("please check to phonenumber"))
-		return
-	}
-	err = ser.Store.ConfirmOrder(&order)
-	if err != nil {
-		log.Println(err)
-		ErrorJSON(w, err)
-		return
-	}
-	var payload jsonResponse
-	payload.Error = false
-	payload.Message = "Order status changed to confirm"
-
-	WriteJSON(w, http.StatusOK, payload)
-
-}
-
-// DisputedOrder godoc
-// This API is used to change the order status to disputed
-// @Summary DisputedOrder
-// @Description This API is used to change the order status to disputed
-// @Tags Order
-// @Accept  json
-// @Produce  json
-// @Param order body model.Order true "Order"
-// @Success 200 {object} jsonResponse
-// @Failure 401 {object} jsonResponse
-// @Router /user/order-disputed [post]
-func DisputedOrder(w http.ResponseWriter, r *http.Request) {
-	var order model.Order
-
-	err := ReadJSON(w, r, &order)
-	if err != nil {
-		log.Println(err)
-		ErrorJSON(w, err)
-		return
-	}
-	if order.ID == uuid.Nil {
-		log.Println(err)
-		ErrorJSON(w, errors.New("order id not found"))
-		return
-	}
-	if order.Amount == 0 {
-		log.Println(err)
-		ErrorJSON(w, errors.New("amount value 0"))
-		return
-	}
-	if order.FromPhone == 0 || util.LenLoop(order.FromPhone) < 10 {
-		log.Println(err)
-		ErrorJSON(w, errors.New("please check from phonenumber"))
-		return
-	}
-	if order.ToPhone == 0 || util.LenLoop(order.ToPhone) < 10 {
-		log.Println(err)
-		ErrorJSON(w, errors.New("please check to phonenumber"))
-		return
-	}
-	err = ser.Store.DisputedOrder(&order)
-	if err != nil {
-		log.Println(err)
-		ErrorJSON(w, err)
-		return
-	}
-	var payload jsonResponse
-	payload.Error = false
-	payload.Message = "Order status changed to disputed"
-
-	WriteJSON(w, http.StatusOK, payload)
-
-}
-
 // DeletedOrder godoc
 // This API is used to delete an order
 // @Summary Delete an order
@@ -582,37 +583,17 @@ func DisputedOrder(w http.ResponseWriter, r *http.Request) {
 // @Tags Order
 // @Accept  json
 // @Produce  json
-// @Param order body model.Order true "Order"
+// @Param order body model.OrderUser true "jsonResponse"
 // @Success 200 {object} jsonResponse
 // @Failure 401 {object} jsonResponse
 // @Router /user/order-delete [post]
 func DeleteOrder(w http.ResponseWriter, r *http.Request) {
-	var order model.Order
+	var order model.OrderUser
 
 	err := ReadJSON(w, r, &order)
 	if err != nil {
 		log.Println(err)
 		ErrorJSON(w, err)
-		return
-	}
-	if order.ID == uuid.Nil {
-		log.Println(err)
-		ErrorJSON(w, errors.New("order id not found"))
-		return
-	}
-	if order.Amount == 0 {
-		log.Println(err)
-		ErrorJSON(w, errors.New("amount value 0"))
-		return
-	}
-	if order.FromPhone == 0 || util.LenLoop(order.FromPhone) < 10 {
-		log.Println(err)
-		ErrorJSON(w, errors.New("please check from phonenumber"))
-		return
-	}
-	if order.ToPhone == 0 || util.LenLoop(order.ToPhone) < 10 {
-		log.Println(err)
-		ErrorJSON(w, errors.New("please check to phonenumber"))
 		return
 	}
 	//Update to database
@@ -628,35 +609,40 @@ func DeleteOrder(w http.ResponseWriter, r *http.Request) {
 
 	WriteJSON(w, http.StatusOK, payload)
 
-	//WriteJSON(w, http.StatusAccepted, res)
-
 }
 
-// GetUserAllOrders godoc
-// This API is used to get all orders of a user
-// @Summary Get all orders of a user
-// @Description This API is used to get all orders of a user
-// @Tags Order
+// CreateTrade godoc
+// This Api is used to create new trade
+// @Summary Create Trade
+// @Description This Api is used create a new trade
+// @Tags Trade
 // @Accept  json
 // @Produce  json
-// @Param user body model.User true "User"
+// @Param order body model.TradeHandlerUser true "jsonResponse"
 // @Success 200 {object} jsonResponse
 // @Failure 401 {object} jsonResponse
-// @Router /user/allorders [post]
-func GetUserAllOrders(w http.ResponseWriter, r *http.Request) {
-	var user model.User
+// @Router /user/create-trade [post]
+func CreateTrade(w http.ResponseWriter, r *http.Request) {
+	var trade model.TradeHandlerUser
 
-	err := ReadJSON(w, r, &user)
+	err := ReadJSON(w, r, &trade)
 	if err != nil {
 		log.Println(err)
 		ErrorJSON(w, err)
 		return
 	}
-	if util.LenLoop(user.PhoneNumber) < 10 {
-		ErrorJSON(w, errors.New("please enter valid phonenumber"))
+	userid, ok := r.Context().Value(UserIDKey).(uuid.UUID)
+	if !ok {
+		ErrorJSON(w, errors.New("can not get userid"))
 		return
 	}
-	orders, err := ser.Store.GetAllOrders(&user)
+	tr, err := util.ConvertTradeStringToTrade(&trade)
+	if err != nil {
+		log.Println(err)
+		ErrorJSON(w, err)
+		return
+	}
+	err = ser.Store.CreateTrade(userid, &tr)
 	if err != nil {
 		log.Println(err)
 		ErrorJSON(w, err)
@@ -664,10 +650,164 @@ func GetUserAllOrders(w http.ResponseWriter, r *http.Request) {
 	}
 	var payload jsonResponse
 	payload.Error = false
-	payload.Message = "Order Deleted"
+	payload.Message = "trade created"
 
-	WriteJSON(w, http.StatusOK, orders)
+	WriteJSON(w, http.StatusOK, payload)
 }
+
+// ConfirmingTrade godoc
+// This Api is used to change the trade status to confirming
+// @Summary ConfirmingTrade
+// @Description This Apis is used to change the trade status to confirming
+// @Tags Trade
+// @Accept  json
+// @Produce  json
+// @Param trade body model.TradeUser true "jsonResponse"
+// @Success 200 {object} jsonResponse
+// @Failure 401 {object} jsonResponse
+// @Router /user/trade-confirming [post]
+func ConfirmingTrade(w http.ResponseWriter, r *http.Request) {
+	var trade model.TradeUser
+
+	err := ReadJSON(w, r, &trade)
+	if err != nil {
+		log.Println(err)
+		ErrorJSON(w, err)
+		return
+	}
+
+	err = ser.Store.ConfirmingTrade(&trade)
+	if err != nil {
+		log.Println(err)
+		ErrorJSON(w, err)
+		return
+	}
+	var payload jsonResponse
+	payload.Error = false
+	payload.Message = "trade status changed to confirming"
+
+	WriteJSON(w, http.StatusOK, payload)
+
+}
+
+// ConfirmTrade godoc
+// This Api is used to change the trade status to confirm
+// @Summary ConfirmTrade
+// @Description This Api is used to change the trade status to confirm
+// @Tags Trade
+// @Accept  json
+// @Produce  json
+// @Param trade body model.TradeUser true "jsonResponse"
+// @Success 200 {object} jsonResponse
+// @Failure 401 {object} jsonResponse
+// @Router /user/trade-confirm [post]
+func ConfirmTrade(w http.ResponseWriter, r *http.Request) {
+	var trade model.TradeUser
+
+	err := ReadJSON(w, r, &trade)
+	if err != nil {
+		log.Println(err)
+		ErrorJSON(w, err)
+		return
+	}
+
+	err = ser.Store.ConfirmTrade(&trade)
+	if err != nil {
+		log.Println(err)
+		ErrorJSON(w, err)
+		return
+	}
+	var payload jsonResponse
+	payload.Error = false
+	payload.Message = "trade status changed to confirm"
+
+	WriteJSON(w, http.StatusOK, payload)
+
+}
+
+// DisputedTrade godoc
+// This API is used to change the trade status to disputed
+// @Summary DisputedTrade
+// @Description This API is used to change the trade status to disputed
+// @Tags Trade
+// @Accept  json
+// @Produce  json
+// @Param trade body model.TradeUser  true "jsonResponse"
+// @Success 200 {object} jsonResponse
+// @Failure 401 {object} jsonResponse
+// @Router /user/trade-disputed [post]
+func DisputedTrade(w http.ResponseWriter, r *http.Request) {
+	var trade model.TradeUser
+
+	err := ReadJSON(w, r, &trade)
+	if err != nil {
+		log.Println(err)
+		ErrorJSON(w, err)
+		return
+	}
+
+	err = ser.Store.DisputedTrade(&trade)
+	if err != nil {
+		log.Println(err)
+		ErrorJSON(w, err)
+		return
+	}
+	var payload jsonResponse
+	payload.Error = false
+	payload.Message = "trade status changed to disputed"
+
+	WriteJSON(w, http.StatusOK, payload)
+
+}
+
+// DeleteTrade godoc
+// This API is used to delete an trade
+// @Summary Delete an trade
+// @Description Delete an trade
+// @Tags Trade
+// @Accept  json
+// @Produce  json
+// @Param trade body model.TradeUser true "jsonResponse"
+// @Success 200 {object} jsonResponse
+// @Failure 401 {object} jsonResponse
+// @Router /user/trade-delete [post]
+func DeleteTrade(w http.ResponseWriter, r *http.Request) {
+	var trade model.TradeUser
+
+	err := ReadJSON(w, r, &trade)
+	if err != nil {
+		log.Println(err)
+		ErrorJSON(w, err)
+		return
+	}
+	//Update to database
+	err = ser.Store.DeleteTrade(&trade)
+	if err != nil {
+		log.Println(err)
+		ErrorJSON(w, err)
+		return
+	}
+	var payload jsonResponse
+	payload.Error = false
+	payload.Message = "trade Deleted"
+
+	WriteJSON(w, http.StatusOK, payload)
+
+	//WriteJSON(w, http.StatusAccepted, res)
+
+}
+
+// RenewAccessToken godoc
+// This API is used to renew accesstoken using refreshtoken which you will get in verifyotp API.
+// @Summary This API is used to renew accesstoken using refreshtoken which you will get in verifyotp API.
+// @Description This API is used to renew accesstoken using refreshtoken which you will get in verifyotp API.
+// @Tags User
+// @Accept  json
+// @Produce  json
+// @Param user body renewAccessTokenRequests true "renewAccessTokenResponse"
+// @Success 200 {object} jsonResponse
+// @Failure 401 {object} jsonResponse
+// @Router /renew-accesstoken [post]
 func RenewAccessToken(w http.ResponseWriter, r *http.Request) {
 	var req renewAccessTokenRequests
 	err := ReadJSON(w, r, &req)
@@ -690,7 +830,7 @@ func RenewAccessToken(w http.ResponseWriter, r *http.Request) {
 	}
 
 	accessToken, accessPayload, err := ser.TokenMaker.CreateToken(
-		refreshPayload.PhoneNumber,
+		refreshPayload.UserId,
 		ser.Config.AccessTokenDuration,
 	)
 	if err != nil {

@@ -8,6 +8,7 @@ import (
 	"net/http"
 )
 
+// swagger:model jsonResponse
 type jsonResponse struct {
 	Error   bool   `json:"error"`
 	Message string `json:"message"`
@@ -24,12 +25,14 @@ func ReadJSON(w http.ResponseWriter, r *http.Request, data any) error {
 
 	err := dec.Decode(data)
 	if err != nil {
+		log.Println("Girish")
 		log.Println(err)
 		return err
 	}
 
 	err = dec.Decode(&struct{}{})
 	if err != io.EOF {
+		log.Println("Giris1")
 		log.Println(err)
 		return errors.New("body must have single JSON value")
 	}

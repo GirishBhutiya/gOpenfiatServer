@@ -1,4 +1,3 @@
-basePath: /
 definitions:
   handler.AuthPayload:
     properties:
@@ -21,33 +20,81 @@ definitions:
       message:
         type: string
     type: object
-  model.Order:
+  handler.renewAccessTokenRequests:
     properties:
-      amount:
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
+    type: object
+  model.CreateGroup:
+    properties:
+      groupname:
         description: |-
-          amount of the order
-          in: integer
+          name of the group
+          in: string
+        type: string
+    type: object
+  model.GroupUser:
+    properties:
+      groupid:
+        description: |-
+          id of the group
+          in: uuid
+        type: string
+      groupname:
+        description: |-
+          name of the group
+          in: string
+        type: string
+    type: object
+  model.OrderHandler:
+    properties:
+      fiatAmount:
         type: number
-      from_phonenumber:
-        description: |-
-          phonenumber of the user who placed the order
-          in: integer
-        type: integer
-      id:
+      minAmount:
+        type: number
+      orderid:
+        type: string
+      price:
+        type: number
+      timeLimit:
+        type: string
+      type:
+        type: string
+      userid:
+        type: string
+    type: object
+  model.OrderUser:
+    properties:
+      orderid:
         description: |-
           id of the order
           in: uuid
         type: string
-      status:
-        description: |-
-          status of the order
-          in: string
+    type: object
+  model.TradeHandler:
+    properties:
+      bidUserid:
         type: string
-      to_phonenumber:
+      method:
+        type: string
+      orderid:
+        type: string
+      status:
+        type: string
+      tradeid:
+        type: string
+      tradetime:
+        type: string
+    type: object
+  model.TradeUser:
+    properties:
+      tradeid:
         description: |-
-          phonenumber of the user who is receiving the order
-          in: integer
-        type: integer
+          id of the trade
+          in: uuid
+        type: string
     type: object
   model.User:
     properties:
@@ -56,6 +103,13 @@ definitions:
           first name of the user
           in: string
         type: string
+      groups:
+        description: |-
+          roll of the user admin or user
+          in: integer
+        items:
+          $ref: '#/definitions/model.GroupUser'
+        type: array
       last_name:
         description: |-
           last name of the user
@@ -71,29 +125,27 @@ definitions:
           profile pic link of the user
           in: string
         type: string
-      roll_id:
+      userid:
         description: |-
-          roll of the user admin or user
+          id of the user
           in: integer
-        type: integer
+        type: string
       verified:
         description: |-
           Is users phone number verified
           in: boolean
         type: boolean
     type: object
-host: api.openfiat.org
+  model.UserLogin:
+    properties:
+      phonenumber:
+        description: |-
+          phonenumber of the user
+          in: integer
+        type: integer
+    type: object
 info:
-  contact:
-    email: support@openfiat.org
-    name: openfiat.org
-    url: '#'
-  description: This is a APIs for OpenflatServer.
-  license:
-    name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
-  title: Openflat Server API
-  version: "0.1"
+  contact: {}
 paths:
   /:
     get:
@@ -114,18 +166,44 @@ paths:
       summary: This API can be used as health check for this application.
       tags:
       - Brocker
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Verify OTP which you get after register
+      parameters:
+      - description: LoginResponse
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/handler.AuthPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.jsonResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.jsonResponse'
+      summary: Login
+      tags:
+      - Auth
   /register:
     post:
       consumes:
       - application/json
       description: This API is used to register user with Phone number
       parameters:
-      - description: User
+      - description: jsonResponse
         in: body
         name: user
         required: true
         schema:
-          $ref: '#/definitions/model.User'
+          $ref: '#/definitions/model.UserLogin'
       produces:
       - application/json
       responses:
@@ -140,18 +218,19 @@ paths:
       summary: This API is used to register user with Phone number
       tags:
       - User
-  /user/allorders:
+  /renew-accesstoken:
     post:
       consumes:
       - application/json
-      description: This API is used to get all orders of a user
+      description: This API is used to renew accesstoken using refreshtoken which
+        you will get in verifyotp API.
       parameters:
-      - description: User
+      - description: renewAccessTokenResponse
         in: body
         name: user
         required: true
         schema:
-          $ref: '#/definitions/model.User'
+          $ref: '#/definitions/handler.renewAccessTokenRequests'
       produces:
       - application/json
       responses:
@@ -163,73 +242,22 @@ paths:
           description: Unauthorized
           schema:
             $ref: '#/definitions/handler.jsonResponse'
-      summary: Get all orders of a user
-      tags:
-      - Order
-  /user/create-order:
-    post:
-      consumes:
-      - application/json
-      description: Create a new order with status pending
-      parameters:
-      - description: Order
-        in: body
-        name: order
-        required: true
-        schema:
-          $ref: '#/definitions/model.Order'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handler.jsonResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/handler.jsonResponse'
-      summary: Create a new order
-      tags:
-      - Order
-  /user/delete:
-    post:
-      consumes:
-      - application/json
-      description: Delete a user
-      parameters:
-      - description: User
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/model.User'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handler.jsonResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/handler.jsonResponse'
-      summary: Delete User
+      summary: This API is used to renew accesstoken using refreshtoken which you
+        will get in verifyotp API.
       tags:
       - User
-  /user/order-confirm:
+  /user/create-buy-order:
     post:
       consumes:
       - application/json
-      description: This Api is used to change the order status to confirm
+      description: Create a new order with status pending and type buy
       parameters:
-      - description: Order
+      - description: jsonResponse
         in: body
         name: order
         required: true
         schema:
-          $ref: '#/definitions/model.Order'
+          $ref: '#/definitions/model.OrderHandler'
       produces:
       - application/json
       responses:
@@ -241,21 +269,21 @@ paths:
           description: Unauthorized
           schema:
             $ref: '#/definitions/handler.jsonResponse'
-      summary: ConfirmOrder
+      summary: Create a new buy order
       tags:
       - Order
-  /user/order-confirming:
+  /user/create-group:
     post:
       consumes:
       - application/json
-      description: This Apis is used to change the order status to confirming
+      description: This API is used to create a new group
       parameters:
-      - description: Order
+      - description: jsonResponse
         in: body
-        name: order
+        name: user
         required: true
         schema:
-          $ref: '#/definitions/model.Order'
+          $ref: '#/definitions/model.CreateGroup'
       produces:
       - application/json
       responses:
@@ -267,21 +295,99 @@ paths:
           description: Unauthorized
           schema:
             $ref: '#/definitions/handler.jsonResponse'
-      summary: ConfirmingOrder
+      summary: Create A New Group
+      tags:
+      - Group
+  /user/create-sell-order:
+    post:
+      consumes:
+      - application/json
+      description: Create a new order with status pending and type sell
+      parameters:
+      - description: jsonResponse
+        in: body
+        name: order
+        required: true
+        schema:
+          $ref: '#/definitions/model.OrderHandler'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.jsonResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.jsonResponse'
+      summary: Create a new sell order
       tags:
       - Order
+  /user/create-trade:
+    post:
+      consumes:
+      - application/json
+      description: This Api is used create a new trade
+      parameters:
+      - description: jsonResponse
+        in: body
+        name: order
+        required: true
+        schema:
+          $ref: '#/definitions/model.TradeHandler'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.jsonResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.jsonResponse'
+      summary: Create Trade
+      tags:
+      - Trade
+  /user/delete-group:
+    post:
+      consumes:
+      - application/json
+      description: This API is used to delete group
+      parameters:
+      - description: jsonResponse
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.GroupUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.jsonResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.jsonResponse'
+      summary: Delete Group
+      tags:
+      - Group
   /user/order-delete:
     post:
       consumes:
       - application/json
       description: Delete an order
       parameters:
-      - description: Order
+      - description: jsonResponse
         in: body
         name: order
         required: true
         schema:
-          $ref: '#/definitions/model.Order'
+          $ref: '#/definitions/model.OrderUser'
       produces:
       - application/json
       responses:
@@ -296,18 +402,18 @@ paths:
       summary: Delete an order
       tags:
       - Order
-  /user/order-disputed:
+  /user/subscribe:
     post:
       consumes:
       - application/json
-      description: This API is used to change the order status to disputed
+      description: This API is used to subscribe to group
       parameters:
-      - description: Order
+      - description: jsonResponse
         in: body
-        name: order
+        name: user
         required: true
         schema:
-          $ref: '#/definitions/model.Order'
+          $ref: '#/definitions/model.GroupUser'
       produces:
       - application/json
       responses:
@@ -319,9 +425,139 @@ paths:
           description: Unauthorized
           schema:
             $ref: '#/definitions/handler.jsonResponse'
-      summary: DisputedOrder
+      summary: Subscribe Group To USer
       tags:
-      - Order
+      - User
+  /user/trade-confirm:
+    post:
+      consumes:
+      - application/json
+      description: This Api is used to change the trade status to confirm
+      parameters:
+      - description: jsonResponse
+        in: body
+        name: trade
+        required: true
+        schema:
+          $ref: '#/definitions/model.TradeUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.jsonResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.jsonResponse'
+      summary: ConfirmTrade
+      tags:
+      - Trade
+  /user/trade-confirming:
+    post:
+      consumes:
+      - application/json
+      description: This Apis is used to change the trade status to confirming
+      parameters:
+      - description: jsonResponse
+        in: body
+        name: trade
+        required: true
+        schema:
+          $ref: '#/definitions/model.TradeUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.jsonResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.jsonResponse'
+      summary: ConfirmingTrade
+      tags:
+      - Trade
+  /user/trade-delete:
+    post:
+      consumes:
+      - application/json
+      description: Delete an trade
+      parameters:
+      - description: jsonResponse
+        in: body
+        name: trade
+        required: true
+        schema:
+          $ref: '#/definitions/model.TradeUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.jsonResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.jsonResponse'
+      summary: Delete an trade
+      tags:
+      - Trade
+  /user/trade-disputed:
+    post:
+      consumes:
+      - application/json
+      description: This API is used to change the trade status to disputed
+      parameters:
+      - description: jsonResponse
+        in: body
+        name: trade
+        required: true
+        schema:
+          $ref: '#/definitions/model.TradeUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.jsonResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.jsonResponse'
+      summary: DisputedTrade
+      tags:
+      - Trade
+  /user/unsubscribe:
+    post:
+      consumes:
+      - application/json
+      description: This API is used to unsubscribe to group
+      parameters:
+      - description: jsonResponse
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.GroupUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.jsonResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.jsonResponse'
+      summary: Unsubscribe Group To USer
+      tags:
+      - User
   /user/update:
     post:
       consumes:
@@ -329,7 +565,7 @@ paths:
       description: This API is used to update user profile like First Name, Last Name
         etc
       parameters:
-      - description: User
+      - description: jsonResponse
         in: body
         name: user
         required: true
@@ -349,18 +585,44 @@ paths:
       summary: Update User profile
       tags:
       - User
-  /user/update-ordervalue:
+  /user/update-group:
     post:
       consumes:
       - application/json
-      description: This Api is used to update the order amount
+      description: This API is used to update group
       parameters:
-      - description: Order
+      - description: jsonResponse
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.GroupUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.jsonResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.jsonResponse'
+      summary: Update Group
+      tags:
+      - Group
+  /user/update-order:
+    post:
+      consumes:
+      - application/json
+      description: This Api is used to update the order
+      parameters:
+      - description: jsonResponse
         in: body
         name: order
         required: true
         schema:
-          $ref: '#/definitions/model.Order'
+          $ref: '#/definitions/model.OrderHandler'
       produces:
       - application/json
       responses:
@@ -375,30 +637,4 @@ paths:
       summary: Update Order Value
       tags:
       - Order
-  /verifyotp:
-    post:
-      consumes:
-      - application/json
-      description: Verify OTP which you get after register
-      parameters:
-      - description: payload
-        in: body
-        name: payload
-        required: true
-        schema:
-          $ref: '#/definitions/handler.AuthPayload'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handler.jsonResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/handler.jsonResponse'
-      summary: Verify OTP
-      tags:
-      - Auth
 swagger: "2.0"

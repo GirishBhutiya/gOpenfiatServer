@@ -1,21 +1,8 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "This is a APIs for OpenflatServer.",
-        "title": "Openflat Server API",
-        "contact": {
-            "name": "openfiat.org",
-            "url": "#",
-            "email": "support@openfiat.org"
-        },
-        "license": {
-            "name": "Apache 2.0",
-            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
-        },
-        "version": "0.1"
+        "contact": {}
     },
-    "host": "api.openfiat.org",
-    "basePath": "/",
     "paths": {
         "/": {
             "get": {
@@ -30,6 +17,46 @@
                     "Brocker"
                 ],
                 "summary": "This API can be used as health check for this application.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.jsonResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.jsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/login": {
+            "post": {
+                "description": "Verify OTP which you get after register",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login",
+                "parameters": [
+                    {
+                        "description": "LoginResponse",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.AuthPayload"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -61,12 +88,12 @@
                 "summary": "This API is used to register user with Phone number",
                 "parameters": [
                     {
-                        "description": "User",
+                        "description": "jsonResponse",
                         "name": "user",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.User"
+                            "$ref": "#/definitions/model.UserLogin"
                         }
                     }
                 ],
@@ -86,89 +113,9 @@
                 }
             }
         },
-        "/user/allorders": {
+        "/renew-accesstoken": {
             "post": {
-                "description": "This API is used to get all orders of a user",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Order"
-                ],
-                "summary": "Get all orders of a user",
-                "parameters": [
-                    {
-                        "description": "User",
-                        "name": "user",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model.User"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handler.jsonResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/handler.jsonResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/user/create-order": {
-            "post": {
-                "description": "Create a new order with status pending",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Order"
-                ],
-                "summary": "Create a new order",
-                "parameters": [
-                    {
-                        "description": "Order",
-                        "name": "order",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model.Order"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handler.jsonResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/handler.jsonResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/user/delete": {
-            "post": {
-                "description": "Delete a user",
+                "description": "This API is used to renew accesstoken using refreshtoken which you will get in verifyotp API.",
                 "consumes": [
                     "application/json"
                 ],
@@ -178,15 +125,15 @@
                 "tags": [
                     "User"
                 ],
-                "summary": "Delete User",
+                "summary": "This API is used to renew accesstoken using refreshtoken which you will get in verifyotp API.",
                 "parameters": [
                     {
-                        "description": "User",
+                        "description": "renewAccessTokenResponse",
                         "name": "user",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.User"
+                            "$ref": "#/definitions/handler.renewAccessTokenRequests"
                         }
                     }
                 ],
@@ -206,9 +153,9 @@
                 }
             }
         },
-        "/user/order-confirm": {
+        "/user/create-buy-order": {
             "post": {
-                "description": "This Api is used to change the order status to confirm",
+                "description": "Create a new order with status pending and type buy",
                 "consumes": [
                     "application/json"
                 ],
@@ -218,15 +165,15 @@
                 "tags": [
                     "Order"
                 ],
-                "summary": "ConfirmOrder",
+                "summary": "Create a new buy order",
                 "parameters": [
                     {
-                        "description": "Order",
+                        "description": "jsonResponse",
                         "name": "order",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.Order"
+                            "$ref": "#/definitions/model.OrderHandler"
                         }
                     }
                 ],
@@ -246,9 +193,49 @@
                 }
             }
         },
-        "/user/order-confirming": {
+        "/user/create-group": {
             "post": {
-                "description": "This Apis is used to change the order status to confirming",
+                "description": "This API is used to create a new group",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Group"
+                ],
+                "summary": "Create A New Group",
+                "parameters": [
+                    {
+                        "description": "jsonResponse",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.CreateGroup"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.jsonResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.jsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/create-sell-order": {
+            "post": {
+                "description": "Create a new order with status pending and type sell",
                 "consumes": [
                     "application/json"
                 ],
@@ -258,15 +245,95 @@
                 "tags": [
                     "Order"
                 ],
-                "summary": "ConfirmingOrder",
+                "summary": "Create a new sell order",
                 "parameters": [
                     {
-                        "description": "Order",
+                        "description": "jsonResponse",
                         "name": "order",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.Order"
+                            "$ref": "#/definitions/model.OrderHandler"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.jsonResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.jsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/create-trade": {
+            "post": {
+                "description": "This Api is used create a new trade",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Trade"
+                ],
+                "summary": "Create Trade",
+                "parameters": [
+                    {
+                        "description": "jsonResponse",
+                        "name": "order",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.TradeHandler"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.jsonResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.jsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/delete-group": {
+            "post": {
+                "description": "This API is used to delete group",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Group"
+                ],
+                "summary": "Delete Group",
+                "parameters": [
+                    {
+                        "description": "jsonResponse",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.GroupUser"
                         }
                     }
                 ],
@@ -301,12 +368,12 @@
                 "summary": "Delete an order",
                 "parameters": [
                     {
-                        "description": "Order",
+                        "description": "jsonResponse",
                         "name": "order",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.Order"
+                            "$ref": "#/definitions/model.OrderUser"
                         }
                     }
                 ],
@@ -326,9 +393,9 @@
                 }
             }
         },
-        "/user/order-disputed": {
+        "/user/subscribe": {
             "post": {
-                "description": "This API is used to change the order status to disputed",
+                "description": "This API is used to subscribe to group",
                 "consumes": [
                     "application/json"
                 ],
@@ -336,17 +403,217 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Order"
+                    "User"
                 ],
-                "summary": "DisputedOrder",
+                "summary": "Subscribe Group To USer",
                 "parameters": [
                     {
-                        "description": "Order",
-                        "name": "order",
+                        "description": "jsonResponse",
+                        "name": "user",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.Order"
+                            "$ref": "#/definitions/model.GroupUser"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.jsonResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.jsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/trade-confirm": {
+            "post": {
+                "description": "This Api is used to change the trade status to confirm",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Trade"
+                ],
+                "summary": "ConfirmTrade",
+                "parameters": [
+                    {
+                        "description": "jsonResponse",
+                        "name": "trade",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.TradeUser"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.jsonResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.jsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/trade-confirming": {
+            "post": {
+                "description": "This Apis is used to change the trade status to confirming",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Trade"
+                ],
+                "summary": "ConfirmingTrade",
+                "parameters": [
+                    {
+                        "description": "jsonResponse",
+                        "name": "trade",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.TradeUser"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.jsonResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.jsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/trade-delete": {
+            "post": {
+                "description": "Delete an trade",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Trade"
+                ],
+                "summary": "Delete an trade",
+                "parameters": [
+                    {
+                        "description": "jsonResponse",
+                        "name": "trade",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.TradeUser"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.jsonResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.jsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/trade-disputed": {
+            "post": {
+                "description": "This API is used to change the trade status to disputed",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Trade"
+                ],
+                "summary": "DisputedTrade",
+                "parameters": [
+                    {
+                        "description": "jsonResponse",
+                        "name": "trade",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.TradeUser"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.jsonResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.jsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/unsubscribe": {
+            "post": {
+                "description": "This API is used to unsubscribe to group",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Unsubscribe Group To USer",
+                "parameters": [
+                    {
+                        "description": "jsonResponse",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.GroupUser"
                         }
                     }
                 ],
@@ -381,7 +648,7 @@
                 "summary": "Update User profile",
                 "parameters": [
                     {
-                        "description": "User",
+                        "description": "jsonResponse",
                         "name": "user",
                         "in": "body",
                         "required": true,
@@ -406,9 +673,9 @@
                 }
             }
         },
-        "/user/update-ordervalue": {
+        "/user/update-group": {
             "post": {
-                "description": "This Api is used to update the order amount",
+                "description": "This API is used to update group",
                 "consumes": [
                     "application/json"
                 ],
@@ -416,17 +683,17 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Order"
+                    "Group"
                 ],
-                "summary": "Update Order Value",
+                "summary": "Update Group",
                 "parameters": [
                     {
-                        "description": "Order",
-                        "name": "order",
+                        "description": "jsonResponse",
+                        "name": "user",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.Order"
+                            "$ref": "#/definitions/model.GroupUser"
                         }
                     }
                 ],
@@ -446,9 +713,9 @@
                 }
             }
         },
-        "/verifyotp": {
+        "/user/update-order": {
             "post": {
-                "description": "Verify OTP which you get after register",
+                "description": "This Api is used to update the order",
                 "consumes": [
                     "application/json"
                 ],
@@ -456,17 +723,17 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Auth"
+                    "Order"
                 ],
-                "summary": "Verify OTP",
+                "summary": "Update Order Value",
                 "parameters": [
                     {
-                        "description": "payload",
-                        "name": "payload",
+                        "description": "jsonResponse",
+                        "name": "order",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.AuthPayload"
+                            "$ref": "#/definitions/model.OrderHandler"
                         }
                     }
                 ],
@@ -513,28 +780,103 @@
                 }
             }
         },
-        "model.Order": {
+        "handler.renewAccessTokenRequests": {
+            "type": "object",
+            "required": [
+                "refresh_token"
+            ],
+            "properties": {
+                "refresh_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.CreateGroup": {
             "type": "object",
             "properties": {
-                "amount": {
-                    "description": "amount of the order\nin: integer",
+                "groupname": {
+                    "description": "name of the group\nin: string",
+                    "type": "string"
+                }
+            }
+        },
+        "model.GroupUser": {
+            "type": "object",
+            "properties": {
+                "groupid": {
+                    "description": "id of the group\nin: uuid",
+                    "type": "string"
+                },
+                "groupname": {
+                    "description": "name of the group\nin: string",
+                    "type": "string"
+                }
+            }
+        },
+        "model.OrderHandler": {
+            "type": "object",
+            "properties": {
+                "fiatAmount": {
                     "type": "number"
                 },
-                "from_phonenumber": {
-                    "description": "phonenumber of the user who placed the order\nin: integer",
-                    "type": "integer"
+                "minAmount": {
+                    "type": "number"
                 },
-                "id": {
+                "orderid": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "timeLimit": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "userid": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.OrderUser": {
+            "type": "object",
+            "properties": {
+                "orderid": {
                     "description": "id of the order\nin: uuid",
+                    "type": "string"
+                }
+            }
+        },
+        "model.TradeHandler": {
+            "type": "object",
+            "properties": {
+                "bidUserid": {
+                    "type": "string"
+                },
+                "method": {
+                    "type": "string"
+                },
+                "orderid": {
                     "type": "string"
                 },
                 "status": {
-                    "description": "status of the order\nin: string",
                     "type": "string"
                 },
-                "to_phonenumber": {
-                    "description": "phonenumber of the user who is receiving the order\nin: integer",
-                    "type": "integer"
+                "tradeid": {
+                    "type": "string"
+                },
+                "tradetime": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.TradeUser": {
+            "type": "object",
+            "properties": {
+                "tradeid": {
+                    "description": "id of the trade\nin: uuid",
+                    "type": "string"
                 }
             }
         },
@@ -544,6 +886,13 @@
                 "first_name": {
                     "description": "first name of the user\nin: string",
                     "type": "string"
+                },
+                "groups": {
+                    "description": "roll of the user admin or user\nin: integer",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.GroupUser"
+                    }
                 },
                 "last_name": {
                     "description": "last name of the user\nin: string",
@@ -557,13 +906,22 @@
                     "description": "profile pic link of the user\nin: string",
                     "type": "string"
                 },
-                "roll_id": {
-                    "description": "roll of the user admin or user\nin: integer",
-                    "type": "integer"
+                "userid": {
+                    "description": "id of the user\nin: integer",
+                    "type": "string"
                 },
                 "verified": {
                     "description": "Is users phone number verified\nin: boolean",
                     "type": "boolean"
+                }
+            }
+        },
+        "model.UserLogin": {
+            "type": "object",
+            "properties": {
+                "phonenumber": {
+                    "description": "phonenumber of the user\nin: integer",
+                    "type": "integer"
                 }
             }
         }

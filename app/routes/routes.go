@@ -27,7 +27,7 @@ func Routes(tokenMaker token.Maker) http.Handler {
 		AllowCredentials: true,
 		MaxAge:           300,
 	}))
-
+	middleware.InitAuthTokenMaker(&tokenMaker)
 	mux.Use(gochi.Heartbeat("/ping"))
 
 	mux.Post("/", handler.Brocker)
@@ -35,22 +35,34 @@ func Routes(tokenMaker token.Maker) http.Handler {
 
 	//mux.Post("/login", app.Login)
 	mux.Post("/register", handler.Register)
-	mux.Post("/verifyotp", handler.VerifyOTP)
+	mux.Post("/login", handler.Login)
 	mux.Post("/renew-accesstoken", handler.RenewAccessToken)
-
-	middleware.InitAuthTokenMaker(&tokenMaker)
 
 	mux.Route("/user", func(mux chi.Router) {
 		mux.Use(middleware.AuthMiddleware)
+		//user endpoints
 		mux.Post("/update", handler.UpdateUser)
-		mux.Post("/delete", handler.DeleteUser)
-		mux.Post("/create-order", handler.CreateOrder)
-		mux.Post("/update-ordervalue", handler.UpdateOrderValue)
-		mux.Post("/order-confirming", handler.ConfirmingOrder)
-		mux.Post("/order-confirm", handler.ConfirmOrder)
-		mux.Post("/order-disputed", handler.DisputedOrder)
+		mux.Post("/subscribe", handler.SubscribeGroupToUSer)
+		mux.Post("/unsubscribe", handler.UnsubscribeGroupToUSer)
+
+		//group endpoints
+		mux.Post("/create-group", handler.CreateGroup)
+		mux.Post("/update-group", handler.UpdateGroup)
+		mux.Post("/delete-group", handler.DeleteGroup)
+
+		//order endpoints
+		mux.Post("/create-buy-order", handler.CreateBuyOrder)
+		mux.Post("/create-sell-order", handler.CreateSellOrder)
+		mux.Post("/update-order", handler.UpdateOrder)
 		mux.Post("/order-delete", handler.DeleteOrder)
-		mux.Post("/allorders", handler.GetUserAllOrders)
+
+		//trade endpoints
+		mux.Post("/create-trade", handler.CreateTrade)
+		mux.Post("/trade-confirming", handler.ConfirmingTrade)
+		mux.Post("/trade-confirm", handler.ConfirmTrade)
+		mux.Post("/trade-disputed", handler.DisputedTrade)
+		mux.Post("/trade-delete", handler.DeleteTrade)
+		//mux.Post("/allorders", handler.GetUserAllOrders)
 
 	})
 	//SwaggerRequest(mux)

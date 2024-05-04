@@ -6,9 +6,13 @@ import (
 	"log"
 	"net/http"
 	"regexp"
+	"time"
 
 	"github.com/GirishBhutiya/gOpenfiatServer/app/config"
+	"github.com/GirishBhutiya/gOpenfiatServer/app/model"
 )
+
+const TimeFormat = "2006-01-02 15:04:05"
 
 func CheckPasswordValidity(password string) bool {
 	if regexp.MustCompile(`\s`).MatchString(password) {
@@ -48,4 +52,33 @@ func LenLoop(i int) int {
 		count++
 	}
 	return count
+}
+func ConvertOrderStringToOrder(order *model.OrderHandlerString) (model.OrderHandler, error) {
+	var or model.OrderHandler
+	parsed, err := time.Parse(TimeFormat, order.TimeLimit)
+	if err != nil {
+		return or, err
+	}
+	or.TimeLimit = parsed
+	or.ID = order.ID
+	or.FiatAmount = order.FiatAmount
+	or.MinAmount = order.MinAmount
+	or.Type = order.Type
+	or.UserId = order.UserId
+	or.Price = order.Price
+
+	return or, nil
+}
+func ConvertTradeStringToTrade(trade *model.TradeHandlerUser) (model.TradeHandler, error) {
+	var tr model.TradeHandler
+	parsed, err := time.Parse(TimeFormat, trade.TradeTime)
+	if err != nil {
+		return tr, err
+	}
+	tr.ID = trade.ID
+	tr.Orderid = trade.Orderid
+	tr.TradeTime = parsed
+	tr.Method = trade.Method
+
+	return tr, nil
 }
