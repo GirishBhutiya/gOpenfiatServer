@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 
 	"log"
 	"net/http"
@@ -209,6 +210,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		ErrorJSON(w, err)
 		return
 	}
+	user.ProfilePic = fmt.Sprintf("%s/%s", r.Host, user.ProfilePic)
 	var res LoginResponse
 	res.Authenticated = true
 	res.AccessToken = accessToken
@@ -228,12 +230,12 @@ func Login(w http.ResponseWriter, r *http.Request) {
 // @Tags User
 // @Accept  json
 // @Produce  json
-// @Param user body model.User true "jsonResponse"
+// @Param user body model.UserUpdate true "jsonResponse"
 // @Success 200 {object} jsonResponse
 // @Failure 401 {object} jsonResponse
 // @Router /user/update [post]
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
-	var user model.User
+	var user model.UserUpdate
 
 	err := ReadJSON(w, r, &user)
 	if err != nil {
@@ -248,12 +250,19 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	user.ID = userid
 	//Update to database
-	_, err = ser.Store.UpdateUser(&user)
+	path, err := util.SaveProfilePic(fmt.Sprintf("%d", user.PhoneNumber), user.Base64JPGIMG)
 	if err != nil {
 		log.Println(err)
 		ErrorJSON(w, err)
 		return
 	}
+	_, err = ser.Store.UpdateUser(path, &user)
+	if err != nil {
+		log.Println(err)
+		ErrorJSON(w, err)
+		return
+	}
+
 	var payload jsonResponse
 	payload.Error = false
 	payload.Message = "User Updated"

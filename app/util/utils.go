@@ -1,10 +1,15 @@
 package util
 
 import (
+	"bytes"
+	"encoding/base64"
+	"errors"
 	"fmt"
+	"image/jpeg"
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"regexp"
 
 	"github.com/GirishBhutiya/gOpenfiatServer/app/config"
@@ -50,6 +55,25 @@ func LenLoop(i int) int {
 		count++
 	}
 	return count
+}
+func SaveProfilePic(imgname, imgBase64 string) (string, error) {
+	unbased, err := base64.StdEncoding.DecodeString(imgBase64)
+	if err != nil {
+		return "", errors.New("cannot decode b64")
+	}
+	r := bytes.NewReader(unbased)
+
+	im, err := jpeg.Decode(r)
+	if err != nil {
+		return "", errors.New("bad jpeg")
+	}
+	imgPath := fmt.Sprintf("profilepic/%s%s", imgname, ".jpeg")
+	f, err := os.OpenFile(imgPath, os.O_WRONLY|os.O_CREATE, 0777)
+	if err != nil {
+		return "", errors.New("cannot open file")
+	}
+
+	return imgPath, jpeg.Encode(f, im, nil)
 }
 
 /* func ConvertOrderStringToOrder(order *model.OrderHandlerString) (model.OrderHandler, error) {

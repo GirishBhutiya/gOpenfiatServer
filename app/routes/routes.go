@@ -33,6 +33,9 @@ func Routes(tokenMaker token.Maker) http.Handler {
 	mux.Post("/", handler.Brocker)
 	mux.Get("/", handler.Brocker)
 
+	fileServer := http.FileServer(http.Dir("./profilepic/"))
+	mux.Handle("/profilepic/*", http.StripPrefix("/profilepic", fileServer))
+
 	//mux.Post("/login", app.Login)
 	mux.Post("/register", handler.Register)
 	mux.Post("/login", handler.Login)

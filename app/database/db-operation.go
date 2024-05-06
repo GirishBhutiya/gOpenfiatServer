@@ -20,7 +20,7 @@ type DatabaseService interface {
 	//user
 	InserLoginRegister(otp int, usr *model.UserLogin) error
 	Login(phoneNumber int, otp int) (model.User, error)
-	UpdateUser(usr *model.User) (model.User, error)
+	UpdateUser(profilepath string, usr *model.UserUpdate) (model.User, error)
 	SubscribeGroupToUSer(userId uuid.UUID, group model.GroupUser) error
 	UnsubscribeGroupToUSer(userId uuid.UUID, group model.GroupUser) error
 	GetAllGroups(userId uuid.UUID) (model.UserGroups, error)
@@ -109,18 +109,23 @@ func (db *DB) Login(phoneNumber int, otp int) (model.User, error) {
 	return user, nil
 }
 
-func (db *DB) UpdateUser(usr *model.User) (model.User, error) {
-
+func (db *DB) UpdateUser(profilepath string, usr *model.UserUpdate) (model.User, error) {
+	var user model.User
 	stmt := `UPDATE users SET first_name=?, last_name=?, profile_pic=?, phonenumber=? WHERE userid=?  IF EXISTS;`
-	rows, err := db.DB.Query(stmt, usr.FirstName, usr.LastName, usr.ProfilePic, usr.PhoneNumber, usr.ID).Exec()
+	rows, err := db.DB.Query(stmt, usr.FirstName, usr.LastName, profilepath, usr.PhoneNumber, usr.ID).Exec()
 	if err != nil {
-		return *usr, err
+		return user, err
 	}
 	if rows[0].Values()[0] == false {
-		return *usr, errors.New("user not found")
+		return user, errors.New("user not found")
 	}
+	user.ID = usr.ID
+	user.FirstName = usr.FirstName
+	user.LastName = usr.LastName
+	user.PhoneNumber = usr.PhoneNumber
+	user.Verified = usr.Verified
 
-	return *usr, nil
+	return user, nil
 }
 
 func (db *DB) SubscribeGroupToUSer(userId uuid.UUID, group model.GroupUser) error {

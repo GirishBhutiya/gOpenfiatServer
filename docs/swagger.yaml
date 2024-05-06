@@ -122,43 +122,6 @@ definitions:
           in: uuid
         type: string
     type: object
-  model.User:
-    properties:
-      first_name:
-        description: |-
-          first name of the user
-          in: string
-        type: string
-      groups:
-        additionalProperties:
-          type: string
-        type: object
-      last_name:
-        description: |-
-          last name of the user
-          in: string
-        type: string
-      phonenumber:
-        description: |-
-          phonenumber of the user
-          in: integer
-        type: integer
-      profile_pic:
-        description: |-
-          profile pic link of the user
-          in: string
-        type: string
-      userid:
-        description: |-
-          id of the user
-          in: integer
-        type: string
-      verified:
-        description: |-
-          Is users phone number verified
-          in: boolean
-        type: boolean
-    type: object
   model.UserGroups:
     properties:
       groups:
@@ -173,6 +136,39 @@ definitions:
           phonenumber of the user
           in: integer
         type: integer
+    type: object
+  model.UserUpdate:
+    properties:
+      base64jpgimg:
+        description: |-
+          profile pic link of the user
+          in: string
+        type: string
+      first_name:
+        description: |-
+          first name of the user
+          in: string
+        type: string
+      last_name:
+        description: |-
+          last name of the user
+          in: string
+        type: string
+      phonenumber:
+        description: |-
+          phonenumber of the user
+          in: integer
+        type: integer
+      userid:
+        description: |-
+          id of the user
+          in: integer
+        type: string
+      verified:
+        description: |-
+          Is users phone number verified
+          in: boolean
+        type: boolean
     type: object
 info:
   contact: {}
@@ -668,7 +664,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/model.User'
+          $ref: '#/definitions/model.UserUpdate'
       produces:
       - application/json
       responses:

@@ -46,6 +46,29 @@ type User struct {
 	// in: string
 	ProfilePic string `json:"profile_pic"`
 }
+
+// swagger:model User
+type UserUpdate struct {
+	// id of the user
+	// in: integer
+	ID uuid.UUID `json:"userid,omitempty"`
+	// phonenumber of the user
+	// in: integer
+	PhoneNumber int `json:"phonenumber,omitempty"`
+	// first name of the user
+	// in: string
+	FirstName string `json:"first_name,omitempty"`
+	// last name of the user
+	// in: string
+	LastName string `json:"last_name,omitempty"`
+	//Is users phone number verified
+	// in: boolean
+	Verified bool `json:"verified"`
+
+	// profile pic link of the user
+	// in: string
+	Base64JPGIMG string `json:"base64jpgimg"`
+}
 type UserGroups struct {
 	Groups map[uuid.UUID]string `json:"groups"`
 }

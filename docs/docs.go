@@ -768,7 +768,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.User"
+                            "$ref": "#/definitions/model.UserUpdate"
                         }
                     }
                 ],
@@ -1035,41 +1035,6 @@ const docTemplate = `{
                 }
             }
         },
-        "model.User": {
-            "type": "object",
-            "properties": {
-                "first_name": {
-                    "description": "first name of the user\nin: string",
-                    "type": "string"
-                },
-                "groups": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
-                },
-                "last_name": {
-                    "description": "last name of the user\nin: string",
-                    "type": "string"
-                },
-                "phonenumber": {
-                    "description": "phonenumber of the user\nin: integer",
-                    "type": "integer"
-                },
-                "profile_pic": {
-                    "description": "profile pic link of the user\nin: string",
-                    "type": "string"
-                },
-                "userid": {
-                    "description": "id of the user\nin: integer",
-                    "type": "string"
-                },
-                "verified": {
-                    "description": "Is users phone number verified\nin: boolean",
-                    "type": "boolean"
-                }
-            }
-        },
         "model.UserGroups": {
             "type": "object",
             "properties": {
@@ -1087,6 +1052,35 @@ const docTemplate = `{
                 "phonenumber": {
                     "description": "phonenumber of the user\nin: integer",
                     "type": "integer"
+                }
+            }
+        },
+        "model.UserUpdate": {
+            "type": "object",
+            "properties": {
+                "base64jpgimg": {
+                    "description": "profile pic link of the user\nin: string",
+                    "type": "string"
+                },
+                "first_name": {
+                    "description": "first name of the user\nin: string",
+                    "type": "string"
+                },
+                "last_name": {
+                    "description": "last name of the user\nin: string",
+                    "type": "string"
+                },
+                "phonenumber": {
+                    "description": "phonenumber of the user\nin: integer",
+                    "type": "integer"
+                },
+                "userid": {
+                    "description": "id of the user\nin: integer",
+                    "type": "string"
+                },
+                "verified": {
+                    "description": "Is users phone number verified\nin: boolean",
+                    "type": "boolean"
                 }
             }
         }
