@@ -48,7 +48,7 @@ definitions:
           in: string
         type: string
     type: object
-  model.OrderHandler:
+  model.Order:
     properties:
       fiatAmount:
         type: number
@@ -60,6 +60,21 @@ definitions:
         type: number
       timeLimit:
         type: string
+      type:
+        type: string
+    type: object
+  model.OrderHandler:
+    properties:
+      fiatAmount:
+        type: number
+      minAmount:
+        type: number
+      orderid:
+        type: string
+      price:
+        type: number
+      timeLimit:
+        type: integer
       type:
         type: string
       userid:
@@ -86,7 +101,18 @@ definitions:
       tradeid:
         type: string
       tradetime:
+        type: integer
+    type: object
+  model.TradeHandlerUser:
+    properties:
+      method:
         type: string
+      orderid:
+        type: string
+      tradeid:
+        type: string
+      tradetime:
+        type: integer
     type: object
   model.TradeUser:
     properties:
@@ -104,12 +130,9 @@ definitions:
           in: string
         type: string
       groups:
-        description: |-
-          roll of the user admin or user
-          in: integer
-        items:
-          $ref: '#/definitions/model.GroupUser'
-        type: array
+        additionalProperties:
+          type: string
+        type: object
       last_name:
         description: |-
           last name of the user
@@ -135,6 +158,13 @@ definitions:
           Is users phone number verified
           in: boolean
         type: boolean
+    type: object
+  model.UserGroups:
+    properties:
+      groups:
+        additionalProperties:
+          type: string
+        type: object
     type: object
   model.UserLogin:
     properties:
@@ -252,7 +282,7 @@ paths:
       - application/json
       description: Create a new order with status pending and type buy
       parameters:
-      - description: jsonResponse
+      - description: model.OrderHandler
         in: body
         name: order
         required: true
@@ -264,7 +294,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handler.jsonResponse'
+            $ref: '#/definitions/model.OrderHandler'
         "401":
           description: Unauthorized
           schema:
@@ -278,7 +308,7 @@ paths:
       - application/json
       description: This API is used to create a new group
       parameters:
-      - description: jsonResponse
+      - description: model.GroupUser
         in: body
         name: user
         required: true
@@ -304,7 +334,7 @@ paths:
       - application/json
       description: Create a new order with status pending and type sell
       parameters:
-      - description: jsonResponse
+      - description: model.OrderHandler
         in: body
         name: order
         required: true
@@ -316,7 +346,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handler.jsonResponse'
+            $ref: '#/definitions/model.OrderHandler'
         "401":
           description: Unauthorized
           schema:
@@ -335,7 +365,7 @@ paths:
         name: order
         required: true
         schema:
-          $ref: '#/definitions/model.TradeHandler'
+          $ref: '#/definitions/model.TradeHandlerUser'
       produces:
       - application/json
       responses:
@@ -376,6 +406,74 @@ paths:
       summary: Delete Group
       tags:
       - Group
+  /user/getgroups:
+    post:
+      consumes:
+      - application/json
+      description: This API is used to get all groups which are releted to user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.UserGroups'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.jsonResponse'
+      summary: Get All Groups
+      tags:
+      - User
+  /user/getorders:
+    post:
+      consumes:
+      - application/json
+      description: This API is used to get all orders which are releted to user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Order'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.jsonResponse'
+      summary: Get All Orders
+      tags:
+      - Order
+  /user/getordertrades:
+    post:
+      consumes:
+      - application/json
+      description: This API is used to get all trades which are releted to order
+      parameters:
+      - description: '[]model.TradeHandler'
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.OrderUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.TradeHandler'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.jsonResponse'
+      summary: Get Order Trades
+      tags:
+      - Order
   /user/order-delete:
     post:
       consumes:

@@ -179,7 +179,7 @@ const docTemplate = `{
                 "summary": "Create a new buy order",
                 "parameters": [
                     {
-                        "description": "jsonResponse",
+                        "description": "model.OrderHandler",
                         "name": "order",
                         "in": "body",
                         "required": true,
@@ -192,7 +192,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handler.jsonResponse"
+                            "$ref": "#/definitions/model.OrderHandler"
                         }
                     },
                     "401": {
@@ -219,7 +219,7 @@ const docTemplate = `{
                 "summary": "Create A New Group",
                 "parameters": [
                     {
-                        "description": "jsonResponse",
+                        "description": "model.GroupUser",
                         "name": "user",
                         "in": "body",
                         "required": true,
@@ -259,7 +259,7 @@ const docTemplate = `{
                 "summary": "Create a new sell order",
                 "parameters": [
                     {
-                        "description": "jsonResponse",
+                        "description": "model.OrderHandler",
                         "name": "order",
                         "in": "body",
                         "required": true,
@@ -272,7 +272,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handler.jsonResponse"
+                            "$ref": "#/definitions/model.OrderHandler"
                         }
                     },
                     "401": {
@@ -304,7 +304,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.TradeHandler"
+                            "$ref": "#/definitions/model.TradeHandlerUser"
                         }
                     }
                 ],
@@ -353,6 +353,110 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/handler.jsonResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.jsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/getgroups": {
+            "post": {
+                "description": "This API is used to get all groups which are releted to user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get All Groups",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.UserGroups"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.jsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/getorders": {
+            "post": {
+                "description": "This API is used to get all orders which are releted to user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Order"
+                ],
+                "summary": "Get All Orders",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Order"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.jsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/getordertrades": {
+            "post": {
+                "description": "This API is used to get all trades which are releted to order",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Order"
+                ],
+                "summary": "Get Order Trades",
+                "parameters": [
+                    {
+                        "description": "[]model.TradeHandler",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.OrderUser"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.TradeHandler"
+                            }
                         }
                     },
                     "401": {
@@ -824,7 +928,7 @@ const docTemplate = `{
                 }
             }
         },
-        "model.OrderHandler": {
+        "model.Order": {
             "type": "object",
             "properties": {
                 "fiatAmount": {
@@ -841,6 +945,29 @@ const docTemplate = `{
                 },
                 "timeLimit": {
                     "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.OrderHandler": {
+            "type": "object",
+            "properties": {
+                "fiatAmount": {
+                    "type": "number"
+                },
+                "minAmount": {
+                    "type": "number"
+                },
+                "orderid": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "timeLimit": {
+                    "type": "integer"
                 },
                 "type": {
                     "type": "string"
@@ -878,7 +1005,24 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "tradetime": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.TradeHandlerUser": {
+            "type": "object",
+            "properties": {
+                "method": {
                     "type": "string"
+                },
+                "orderid": {
+                    "type": "string"
+                },
+                "tradeid": {
+                    "type": "string"
+                },
+                "tradetime": {
+                    "type": "integer"
                 }
             }
         },
@@ -899,10 +1043,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "groups": {
-                    "description": "roll of the user admin or user\nin: integer",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.GroupUser"
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
                     }
                 },
                 "last_name": {
@@ -924,6 +1067,17 @@ const docTemplate = `{
                 "verified": {
                     "description": "Is users phone number verified\nin: boolean",
                     "type": "boolean"
+                }
+            }
+        },
+        "model.UserGroups": {
+            "type": "object",
+            "properties": {
+                "groups": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 }
             }
         },

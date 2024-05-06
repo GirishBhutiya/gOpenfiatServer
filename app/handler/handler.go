@@ -452,10 +452,10 @@ func DeleteGroup(w http.ResponseWriter, r *http.Request) {
 // This API is used to get all groups which are related to user
 // @Summary Get All Groups
 // @Description This API is used to get all groups which are releted to user
-// @Tags Group
-// @Accept  json
-// @Produce  json
-// @Param user  true "model.UserGroups"
+// @Tags			User
+// @Accept			json
+// @Produce		json
+// @Required false
 // @Success 200 {object} model.UserGroups
 // @Failure 401 {object} jsonResponse
 // @Router /user/getgroups [post]
@@ -637,7 +637,6 @@ func DeleteOrder(w http.ResponseWriter, r *http.Request) {
 // @Tags Order
 // @Accept  json
 // @Produce  json
-// @Param user  true "[]model.Order"
 // @Success 200 {object} []model.Order
 // @Failure 401 {object} jsonResponse
 // @Router /user/getorders [post]
@@ -912,7 +911,7 @@ func GetAllUsersTrade(w http.ResponseWriter, r *http.Request) {
 // @Tags Order
 // @Accept  json
 // @Produce  json
-// @Param user  true "[]model.TradeHandler"
+// @Param user  body model.OrderUser true "[]model.TradeHandler"
 // @Success 200 {object} []model.TradeHandler
 // @Failure 401 {object} jsonResponse
 // @Router /user/getordertrades [post]
