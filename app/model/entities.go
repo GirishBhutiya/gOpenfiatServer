@@ -40,16 +40,18 @@ type User struct {
 	//Is users phone number verified
 	// in: boolean
 	Verified bool `json:"verified"`
-	// roll of the user admin or user
-	// in: integer
+
 	Groups map[uuid.UUID]string `json:"groups"`
 	// profile pic link of the user
 	// in: string
 	ProfilePic string `json:"profile_pic"`
 }
+type UserGroups struct {
+	Groups map[uuid.UUID]string `json:"groups"`
+}
 
 // swagger:model User
-type UserHandler struct {
+type UserHandler1 struct {
 	// phonenumber of the user
 	// in: integer
 	PhoneNumber int `json:"phonenumber,omitempty"`
@@ -97,12 +99,20 @@ type OrderHandler struct {
 	FiatAmount float32   `json:"fiatAmount,omitempty"`
 	MinAmount  float32   `json:"minAmount,omitempty"`
 	Price      float32   `json:"price,omitempty"`
-	TimeLimit  time.Time `json:"timeLimit,omitempty"`
+	TimeLimit  int64     `json:"timeLimit,omitempty"`
 	Type       string    `json:"type"`
 }
 type OrderHandlerString struct {
 	ID         uuid.UUID `json:"orderid"`
 	UserId     uuid.UUID `json:"userid"`
+	FiatAmount float32   `json:"fiatAmount,omitempty"`
+	MinAmount  float32   `json:"minAmount,omitempty"`
+	Price      float32   `json:"price,omitempty"`
+	TimeLimit  string    `json:"timeLimit,omitempty"`
+	Type       string    `json:"type"`
+}
+type Order struct {
+	ID         uuid.UUID `json:"orderid"`
 	FiatAmount float32   `json:"fiatAmount,omitempty"`
 	MinAmount  float32   `json:"minAmount,omitempty"`
 	Price      float32   `json:"price,omitempty"`
@@ -160,14 +170,21 @@ type TradeHandler struct {
 	ID        uuid.UUID `json:"tradeid"`
 	Orderid   uuid.UUID `json:"orderid"`
 	BidUserid uuid.UUID `json:"bidUserid"`
-	TradeTime time.Time `json:"tradetime"`
+	TradeTime int64     `json:"tradetime"`
 	Status    string    `json:"status"`
 	Method    string    `json:"method"`
 }
 type TradeHandlerUser struct {
 	ID        uuid.UUID `json:"tradeid"`
 	Orderid   uuid.UUID `json:"orderid"`
-	TradeTime string    `json:"tradetime"`
+	TradeTime int64     `json:"tradetime"`
+	Method    string    `json:"method"`
+}
+type UserTrades struct {
+	ID        uuid.UUID `json:"tradeid"`
+	Orderid   uuid.UUID `json:"orderid"`
+	TradeTime int64     `json:"tradetime"`
+	Status    string    `json:"status"`
 	Method    string    `json:"method"`
 }
 

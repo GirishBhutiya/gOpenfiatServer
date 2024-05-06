@@ -44,6 +44,7 @@ func Routes(tokenMaker token.Maker) http.Handler {
 		mux.Post("/update", handler.UpdateUser)
 		mux.Post("/subscribe", handler.SubscribeGroupToUSer)
 		mux.Post("/unsubscribe", handler.UnsubscribeGroupToUSer)
+		mux.Post("/getgroups", handler.GetAllGroups)
 
 		//group endpoints
 		mux.Post("/create-group", handler.CreateGroup)
@@ -55,6 +56,7 @@ func Routes(tokenMaker token.Maker) http.Handler {
 		mux.Post("/create-sell-order", handler.CreateSellOrder)
 		mux.Post("/update-order", handler.UpdateOrder)
 		mux.Post("/order-delete", handler.DeleteOrder)
+		mux.Post("/getorders", handler.GetAllOrders)
 
 		//trade endpoints
 		mux.Post("/create-trade", handler.CreateTrade)
@@ -62,6 +64,8 @@ func Routes(tokenMaker token.Maker) http.Handler {
 		mux.Post("/trade-confirm", handler.ConfirmTrade)
 		mux.Post("/trade-disputed", handler.DisputedTrade)
 		mux.Post("/trade-delete", handler.DeleteTrade)
+		mux.Post("/getusertrades", handler.GetAllUsersTrade)
+		mux.Post("/getordertrades", handler.GetOrderTrades)
 		//mux.Post("/allorders", handler.GetUserAllOrders)
 
 	})

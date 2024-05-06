@@ -23,23 +23,26 @@ type DatabaseService interface {
 	UpdateUser(usr *model.User) (model.User, error)
 	SubscribeGroupToUSer(userId uuid.UUID, group model.GroupUser) error
 	UnsubscribeGroupToUSer(userId uuid.UUID, group model.GroupUser) error
-
+	GetAllGroups(userId uuid.UUID) (model.UserGroups, error)
 	//groups
-	CreateNewGroup(userId uuid.UUID, group model.CreateGroup) error
+	CreateNewGroup(userId uuid.UUID, group model.CreateGroup) (model.GroupUser, error)
 	UpdateGroup(group model.GroupUser) error
-	DeleteGroup(group model.GroupUser) error
+	DeleteGroup(userId uuid.UUID, group model.GroupUser) error
 
 	//order
-	CreateNewOrder(userId uuid.UUID, orderType string, order *model.OrderHandler) error
+	CreateNewOrder(userId uuid.UUID, orderType string, order *model.OrderHandler) (model.OrderHandler, error)
 	UpdateOrder(order *model.OrderHandler) error
 	DeleteOrder(order *model.OrderUser) error
+	GetAllOrders(userId uuid.UUID) ([]model.Order, error)
 
 	//trade
-	CreateTrade(userId uuid.UUID, trade *model.TradeHandler) error
+	CreateTrade(userId uuid.UUID, trade *model.TradeHandlerUser) error
 	ConfirmingTrade(trade *model.TradeUser) error
 	ConfirmTrade(trade *model.TradeUser) error
 	DisputedTrade(trade *model.TradeUser) error
 	DeleteTrade(trade *model.TradeUser) error
+	GetAllUserTrade(userId uuid.UUID) ([]model.UserTrades, error)
+	GetOrderTrades(userId uuid.UUID, order model.OrderUser) ([]model.TradeHandler, error)
 }
 
 func (db *DB) InserLoginRegister(otp int, usr *model.UserLogin) error {
@@ -88,7 +91,7 @@ func (db *DB) Login(phoneNumber int, otp int) (model.User, error) {
 		fmt.Println("\nuser:", user)
 		fmt.Println("opt:", otp, " motp:", motp) */
 	}
-	log.Println(user, "\nopt", otp)
+	//log.Println(user, "\nopt", otp)
 	if motp != otp {
 		return user, errors.New("invalid otp")
 	}
@@ -102,6 +105,7 @@ func (db *DB) Login(phoneNumber int, otp int) (model.User, error) {
 		vals := r.Values()
 		fmt.Println("Values:", vals)
 	} */
+	user.Verified = true
 	return user, nil
 }
 
@@ -146,19 +150,49 @@ func (db *DB) UnsubscribeGroupToUSer(userId uuid.UUID, group model.GroupUser) er
 
 	return nil
 }
+func (db *DB) GetAllGroups(userId uuid.UUID) (model.UserGroups, error) {
+	var user model.User
+	var usrGroups model.UserGroups
+	stmt := "SELECT groups FROM users WHERE userid=?"
+	rows, err := db.DB.Query(stmt, userId).Exec()
+	if err != nil {
+		return usrGroups, err
+	}
+	if len(rows) == 0 {
+		return usrGroups, errors.New("user not found")
+	}
+	for _, r := range rows {
+		//vals := r.Values()
+		r.Scan(&user.Groups)
+		//fmt.Println("\nValues:", vals)
 
-func (db *DB) CreateNewGroup(userId uuid.UUID, group model.CreateGroup) error {
+	}
+	usrGroups.Groups = user.Groups
+	return usrGroups, nil
+}
+
+func (db *DB) CreateNewGroup(userId uuid.UUID, group model.CreateGroup) (model.GroupUser, error) {
 	stmt := `INSERT INTO group (groupid, groupname, creatorUserid, createtime) values (?, ?, ?, ?) IF NOT EXISTS;`
-	rows, err := db.DB.Query(stmt, uuid.New(), group.Name, userId, time.Now()).Exec()
+	id := uuid.New()
+	var g model.GroupUser
+	rows, err := db.DB.Query(stmt, id, group.Name, userId, time.Now()).Exec()
 	if err != nil {
 		//log.Println("Error:", err)
-		return err
+		return g, err
 	}
+	log.Println(rows)
 	if rows[0].Values()[0] == false {
-		return errors.New("group not created")
+		return g, errors.New("group not created")
 	}
+	g.ID = id
+	g.Name = group.Name
 
-	return nil
+	err = db.SubscribeGroupToUSer(userId, g)
+	if err != nil {
+		//log.Println("Error:", err)
+		return g, errors.New("group not subscribed to user")
+	}
+	return g, nil
 }
 func (db *DB) UpdateGroup(group model.GroupUser) error {
 
@@ -174,7 +208,7 @@ func (db *DB) UpdateGroup(group model.GroupUser) error {
 
 	return nil
 }
-func (db *DB) DeleteGroup(group model.GroupUser) error {
+func (db *DB) DeleteGroup(userId uuid.UUID, group model.GroupUser) error {
 
 	stmt := `DELETE FROM group WHERE groupid=?  IF EXISTS;`
 	rows, err := db.DB.Query(stmt, group.ID).Exec()
@@ -184,22 +218,30 @@ func (db *DB) DeleteGroup(group model.GroupUser) error {
 	if rows[0].Values()[0] == false {
 		return errors.New("group not found")
 	}
-
+	err = db.UnsubscribeGroupToUSer(userId, group)
+	if err != nil {
+		//log.Println("Error:", err)
+		return errors.New("group not unsubscribed to user")
+	}
 	return nil
 }
 
-func (db *DB) CreateNewOrder(userId uuid.UUID, orderType string, order *model.OrderHandler) error {
+func (db *DB) CreateNewOrder(userId uuid.UUID, orderType string, order *model.OrderHandler) (model.OrderHandler, error) {
+	var orderN model.OrderHandler
+	id := uuid.New()
 	stmt := `INSERT INTO orders (orderid, userid, fiatAmount, minAmount, price, timeLimit,type) values (?, ?, ?, ?, ?, ?, ?) IF NOT EXISTS;`
-	rows, err := db.DB.Query(stmt, uuid.New(), userId, order.FiatAmount, order.MinAmount, order.Price, order.TimeLimit, orderType).Exec()
+	rows, err := db.DB.Query(stmt, id, userId, order.FiatAmount, order.MinAmount, order.Price, order.TimeLimit, orderType).Exec()
 	if err != nil {
 		//log.Println("Error:", err)
-		return err
+		return orderN, err
 	}
 	if rows[0].Values()[0] == false {
-		return errors.New("order not placed")
+		return orderN, errors.New("order not placed")
 	}
-
-	return nil
+	order.ID = id
+	order.UserId = userId
+	order.Type = orderType
+	return *order, nil
 }
 func (db *DB) UpdateOrder(order *model.OrderHandler) error {
 	stmt := `UPDATE orders SET fiatAmount=?, minAmount =?, price=?, timeLimit=? WHERE orderid=?  IF EXISTS;`
@@ -226,8 +268,31 @@ func (db *DB) DeleteOrder(order *model.OrderUser) error {
 
 	return nil
 }
+func (db *DB) GetAllOrders(userId uuid.UUID) ([]model.Order, error) {
+	var orders []model.Order
+	stmt := `SELECT orderid,fiatamount,minamount,price,timelimit,type FROM orders WHERE userid=? ALLOW FILTERING;`
+	rows, err := db.DB.Query(stmt, userId).Exec()
+	if err != nil {
+		return orders, err
+	}
+	if len(rows) == 0 {
+		return orders, errors.New("no urders found")
+	}
+	for _, r := range rows {
+		var order model.Order
+		//vals := r.Values()
+		r.Scan(&order.ID, &order.FiatAmount, &order.MinAmount, &order.Price, &order.TimeLimit, &order.Type)
 
-func (db *DB) CreateTrade(userId uuid.UUID, trade *model.TradeHandler) error {
+		//fmt.Println("\nValues:", vals)
+		//fmt.Println("\norder:", order)
+		orders = append(orders, order)
+
+	}
+	//fmt.Println("\norder:", orders)
+	return orders, nil
+
+}
+func (db *DB) CreateTrade(userId uuid.UUID, trade *model.TradeHandlerUser) error {
 	stmt := `INSERT INTO trade (tradeid, orderid, bidUserid, tradetime, status, method) values (?, ?, ?, ?, ?, ?) IF NOT EXISTS;`
 	rows, err := db.DB.Query(stmt, uuid.New(), trade.Orderid, userId, trade.TradeTime, model.ORDER_STATUS_PENDING, trade.Method).Exec()
 	if err != nil {
@@ -291,4 +356,53 @@ func (db *DB) DeleteTrade(trade *model.TradeUser) error {
 	}
 
 	return nil
+}
+
+func (db *DB) GetAllUserTrade(userId uuid.UUID) ([]model.UserTrades, error) {
+	var trades []model.UserTrades
+	stmt := `SELECT tradeid,method,orderid,status,tradetime FROM trade WHERE biduserid=? ALLOW FILTERING;`
+	rows, err := db.DB.Query(stmt, userId).Exec()
+	if err != nil {
+		return trades, err
+	}
+	if len(rows) == 0 {
+		return trades, errors.New("no trade found")
+	}
+	for _, r := range rows {
+		var trade model.UserTrades
+		//vals := r.Values()
+		r.Scan(&trade.ID, &trade.Method, &trade.Orderid, &trade.Status, &trade.TradeTime)
+
+		//fmt.Println("\nValues:", vals)
+		//fmt.Println("\norder:", order)
+		trades = append(trades, trade)
+
+	}
+	//fmt.Println("\norder:", trades)
+	return trades, nil
+
+}
+func (db *DB) GetOrderTrades(userId uuid.UUID, order model.OrderUser) ([]model.TradeHandler, error) {
+	var trades []model.TradeHandler
+	stmt := `SELECT tradeid,biduserid,method,orderid,status,tradetime FROM trade WHERE orderid=? ALLOW FILTERING;`
+	rows, err := db.DB.Query(stmt, order.ID).Exec()
+	if err != nil {
+		return trades, err
+	}
+	if len(rows) == 0 {
+		return trades, errors.New("no trade found")
+	}
+	for _, r := range rows {
+		var trade model.TradeHandler
+		//vals := r.Values()
+		r.Scan(&trade.ID, &trade.BidUserid, &trade.Method, &trade.Orderid, &trade.Status, &trade.TradeTime)
+
+		//fmt.Println("\nValues:", vals)
+		//fmt.Println("\norder:", trade)
+		trades = append(trades, trade)
+
+	}
+	//fmt.Println("\norder:", trades)
+	return trades, nil
+
 }

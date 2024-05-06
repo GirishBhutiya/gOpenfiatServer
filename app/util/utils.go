@@ -6,10 +6,8 @@ import (
 	"log"
 	"net/http"
 	"regexp"
-	"time"
 
 	"github.com/GirishBhutiya/gOpenfiatServer/app/config"
-	"github.com/GirishBhutiya/gOpenfiatServer/app/model"
 )
 
 const TimeFormat = "2006-01-02 15:04:05"
@@ -53,7 +51,8 @@ func LenLoop(i int) int {
 	}
 	return count
 }
-func ConvertOrderStringToOrder(order *model.OrderHandlerString) (model.OrderHandler, error) {
+
+/* func ConvertOrderStringToOrder(order *model.OrderHandlerString) (model.OrderHandler, error) {
 	var or model.OrderHandler
 	parsed, err := time.Parse(TimeFormat, order.TimeLimit)
 	if err != nil {
@@ -81,4 +80,4 @@ func ConvertTradeStringToTrade(trade *model.TradeHandlerUser) (model.TradeHandle
 	tr.Method = trade.Method
 
 	return tr, nil
-}
+} */

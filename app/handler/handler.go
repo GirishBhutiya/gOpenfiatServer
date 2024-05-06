@@ -345,7 +345,7 @@ func UnsubscribeGroupToUSer(w http.ResponseWriter, r *http.Request) {
 // @Tags Group
 // @Accept  json
 // @Produce  json
-// @Param user body model.CreateGroup true "jsonResponse"
+// @Param user body model.CreateGroup true "model.GroupUser"
 // @Success 200 {object} jsonResponse
 // @Failure 401 {object} jsonResponse
 // @Router /user/create-group [post]
@@ -364,17 +364,13 @@ func CreateGroup(w http.ResponseWriter, r *http.Request) {
 		ErrorJSON(w, errors.New("can not get userid"))
 		return
 	}
-	err = ser.Store.CreateNewGroup(userid, group)
+	grp, err := ser.Store.CreateNewGroup(userid, group)
 	if err != nil {
 		log.Println(err)
 		ErrorJSON(w, err)
 		return
 	}
-	var payload jsonResponse
-	payload.Error = false
-	payload.Message = "group created"
-
-	WriteJSON(w, http.StatusOK, payload)
+	WriteJSON(w, http.StatusOK, grp)
 
 }
 
@@ -433,8 +429,12 @@ func DeleteGroup(w http.ResponseWriter, r *http.Request) {
 		ErrorJSON(w, err)
 		return
 	}
-
-	err = ser.Store.DeleteGroup(group)
+	userid, ok := r.Context().Value(UserIDKey).(uuid.UUID)
+	if !ok {
+		ErrorJSON(w, errors.New("can not get userid"))
+		return
+	}
+	err = ser.Store.DeleteGroup(userid, group)
 	if err != nil {
 		log.Println(err)
 		ErrorJSON(w, err)
@@ -448,6 +448,32 @@ func DeleteGroup(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// GetAllGroups : get all groups of user
+// This API is used to get all groups which are related to user
+// @Summary Get All Groups
+// @Description This API is used to get all groups which are releted to user
+// @Tags Group
+// @Accept  json
+// @Produce  json
+// @Param user  true "model.UserGroups"
+// @Success 200 {object} model.UserGroups
+// @Failure 401 {object} jsonResponse
+// @Router /user/getgroups [post]
+func GetAllGroups(w http.ResponseWriter, r *http.Request) {
+	userid, ok := r.Context().Value(UserIDKey).(uuid.UUID)
+	if !ok {
+		ErrorJSON(w, errors.New("can not get userid"))
+		return
+	}
+	usrGroups, err := ser.Store.GetAllGroups(userid)
+	if err != nil {
+		log.Println(err)
+		ErrorJSON(w, err)
+		return
+	}
+	WriteJSON(w, http.StatusOK, usrGroups)
+}
+
 // CreateBuyOrder : Create a new buy order
 // CreateBuyOrder : Create a new order with status pending and type buy
 // @Summary Create a new buy order
@@ -455,12 +481,12 @@ func DeleteGroup(w http.ResponseWriter, r *http.Request) {
 // @Tags Order
 // @Accept  json
 // @Produce  json
-// @Param order body model.OrderHandler true "jsonResponse"
-// @Success 200 {object} jsonResponse
+// @Param order body model.OrderHandler true "model.OrderHandler"
+// @Success 200 {object} model.OrderHandler
 // @Failure 401 {object} jsonResponse
 // @Router /user/create-buy-order [post]
 func CreateBuyOrder(w http.ResponseWriter, r *http.Request) {
-	var order model.OrderHandlerString
+	var order model.OrderHandler
 
 	err := ReadJSON(w, r, &order)
 	if err != nil {
@@ -473,23 +499,20 @@ func CreateBuyOrder(w http.ResponseWriter, r *http.Request) {
 		ErrorJSON(w, errors.New("can not get userid"))
 		return
 	}
-	or, err := util.ConvertOrderStringToOrder(&order)
+	/* or, err := util.ConvertOrderStringToOrder(&order)
+	if err != nil {
+		log.Println(err)
+		ErrorJSON(w, err)
+		return
+	} */
+	order, err = ser.Store.CreateNewOrder(userid, model.ORDER_TYPE_BUY, &order)
 	if err != nil {
 		log.Println(err)
 		ErrorJSON(w, err)
 		return
 	}
-	err = ser.Store.CreateNewOrder(userid, model.ORDER_TYPE_BUY, &or)
-	if err != nil {
-		log.Println(err)
-		ErrorJSON(w, err)
-		return
-	}
-	var payload jsonResponse
-	payload.Error = false
-	payload.Message = "Order Created"
 
-	WriteJSON(w, http.StatusOK, payload)
+	WriteJSON(w, http.StatusOK, order)
 }
 
 // CreateSellOrder : Create a new sell order
@@ -499,13 +522,12 @@ func CreateBuyOrder(w http.ResponseWriter, r *http.Request) {
 // @Tags Order
 // @Accept  json
 // @Produce  json
-// @Param order body model.OrderHandler true "jsonResponse"
-// @Success 200 {object} jsonResponse
+// @Param order body model.OrderHandler true "model.OrderHandler"
+// @Success 200 {object} model.OrderHandler
 // @Failure 401 {object} jsonResponse
 // @Router /user/create-sell-order [post]
 func CreateSellOrder(w http.ResponseWriter, r *http.Request) {
-	var order model.OrderHandlerString
-
+	var order model.OrderHandler
 	err := ReadJSON(w, r, &order)
 	if err != nil {
 		log.Println(err)
@@ -517,23 +539,20 @@ func CreateSellOrder(w http.ResponseWriter, r *http.Request) {
 		ErrorJSON(w, errors.New("can not get userid"))
 		return
 	}
-	or, err := util.ConvertOrderStringToOrder(&order)
+	/* or, err := util.ConvertOrderStringToOrder(&order)
+	if err != nil {
+		log.Println(err)
+		ErrorJSON(w, err)
+		return
+	} */
+	order, err = ser.Store.CreateNewOrder(userid, model.ORDER_TYPE_SELL, &order)
 	if err != nil {
 		log.Println(err)
 		ErrorJSON(w, err)
 		return
 	}
-	err = ser.Store.CreateNewOrder(userid, model.ORDER_TYPE_SELL, &or)
-	if err != nil {
-		log.Println(err)
-		ErrorJSON(w, err)
-		return
-	}
-	var payload jsonResponse
-	payload.Error = false
-	payload.Message = "Order Created"
 
-	WriteJSON(w, http.StatusOK, payload)
+	WriteJSON(w, http.StatusOK, order)
 }
 
 // UpdateOrder godoc
@@ -548,7 +567,7 @@ func CreateSellOrder(w http.ResponseWriter, r *http.Request) {
 // @Failure 401 {object} jsonResponse
 // @Router /user/update-order [post]
 func UpdateOrder(w http.ResponseWriter, r *http.Request) {
-	var order model.OrderHandlerString
+	var order model.OrderHandler
 
 	err := ReadJSON(w, r, &order)
 	if err != nil {
@@ -556,13 +575,13 @@ func UpdateOrder(w http.ResponseWriter, r *http.Request) {
 		ErrorJSON(w, err)
 		return
 	}
-	or, err := util.ConvertOrderStringToOrder(&order)
+	/* or, err := util.ConvertOrderStringToOrder(&order)
 	if err != nil {
 		log.Println(err)
 		ErrorJSON(w, err)
 		return
-	}
-	err = ser.Store.UpdateOrder(&or)
+	} */
+	err = ser.Store.UpdateOrder(&order)
 	if err != nil {
 		log.Println(err)
 		ErrorJSON(w, err)
@@ -611,6 +630,32 @@ func DeleteOrder(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// GetAllOrders : get all orders of user
+// This API is used to get all orders which are related to user
+// @Summary Get All Orders
+// @Description This API is used to get all orders which are releted to user
+// @Tags Order
+// @Accept  json
+// @Produce  json
+// @Param user  true "[]model.Order"
+// @Success 200 {object} []model.Order
+// @Failure 401 {object} jsonResponse
+// @Router /user/getorders [post]
+func GetAllOrders(w http.ResponseWriter, r *http.Request) {
+	userid, ok := r.Context().Value(UserIDKey).(uuid.UUID)
+	if !ok {
+		ErrorJSON(w, errors.New("can not get userid"))
+		return
+	}
+	orders, err := ser.Store.GetAllOrders(userid)
+	if err != nil {
+		log.Println(err)
+		ErrorJSON(w, err)
+		return
+	}
+	WriteJSON(w, http.StatusOK, orders)
+}
+
 // CreateTrade godoc
 // This Api is used to create new trade
 // @Summary Create Trade
@@ -636,13 +681,13 @@ func CreateTrade(w http.ResponseWriter, r *http.Request) {
 		ErrorJSON(w, errors.New("can not get userid"))
 		return
 	}
-	tr, err := util.ConvertTradeStringToTrade(&trade)
+	/* tr, err := util.ConvertTradeStringToTrade(&trade)
 	if err != nil {
 		log.Println(err)
 		ErrorJSON(w, err)
 		return
-	}
-	err = ser.Store.CreateTrade(userid, &tr)
+	} */
+	err = ser.Store.CreateTrade(userid, &trade)
 	if err != nil {
 		log.Println(err)
 		ErrorJSON(w, err)
@@ -844,4 +889,51 @@ func RenewAccessToken(w http.ResponseWriter, r *http.Request) {
 	}
 
 	WriteJSON(w, http.StatusOK, rsp)
+}
+func GetAllUsersTrade(w http.ResponseWriter, r *http.Request) {
+	userid, ok := r.Context().Value(UserIDKey).(uuid.UUID)
+	if !ok {
+		ErrorJSON(w, errors.New("can not get userid"))
+		return
+	}
+	trades, err := ser.Store.GetAllUserTrade(userid)
+	if err != nil {
+		log.Println(err)
+		ErrorJSON(w, err)
+		return
+	}
+	WriteJSON(w, http.StatusOK, trades)
+}
+
+// GetOrderTrades : get all trades of order
+// This API is used to get all trades which are related to order
+// @Summary Get Order Trades
+// @Description This API is used to get all trades which are releted to order
+// @Tags Order
+// @Accept  json
+// @Produce  json
+// @Param user  true "[]model.TradeHandler"
+// @Success 200 {object} []model.TradeHandler
+// @Failure 401 {object} jsonResponse
+// @Router /user/getordertrades [post]
+func GetOrderTrades(w http.ResponseWriter, r *http.Request) {
+	var order model.OrderUser
+	err := ReadJSON(w, r, &order)
+	if err != nil {
+		log.Println(err)
+		ErrorJSON(w, err)
+		return
+	}
+	userid, ok := r.Context().Value(UserIDKey).(uuid.UUID)
+	if !ok {
+		ErrorJSON(w, errors.New("can not get userid"))
+		return
+	}
+	trades, err := ser.Store.GetOrderTrades(userid, order)
+	if err != nil {
+		log.Println(err)
+		ErrorJSON(w, err)
+		return
+	}
+	WriteJSON(w, http.StatusOK, trades)
 }
