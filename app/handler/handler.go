@@ -210,7 +210,9 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		ErrorJSON(w, err)
 		return
 	}
-	user.ProfilePic = fmt.Sprintf("%s/%s", r.Host, user.ProfilePic)
+	if user.ProfilePic != "" {
+		user.ProfilePic = fmt.Sprintf("%s/%s", r.Host, user.ProfilePic)
+	}
 	var res LoginResponse
 	res.Authenticated = true
 	res.AccessToken = accessToken

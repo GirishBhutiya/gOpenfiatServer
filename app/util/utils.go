@@ -13,6 +13,7 @@ import (
 	"regexp"
 
 	"github.com/GirishBhutiya/gOpenfiatServer/app/config"
+	"github.com/google/uuid"
 )
 
 const TimeFormat = "2006-01-02 15:04:05"
@@ -74,6 +75,13 @@ func SaveProfilePic(imgname, imgBase64 string) (string, error) {
 	}
 
 	return imgPath, jpeg.Encode(f, im, nil)
+}
+func ConvertUUIDToAny(ids []uuid.UUID) []any {
+	var newIds []interface{}
+	for _, id := range ids {
+		newIds = append(newIds, id)
+	}
+	return newIds
 }
 
 /* func ConvertOrderStringToOrder(order *model.OrderHandlerString) (model.OrderHandler, error) {

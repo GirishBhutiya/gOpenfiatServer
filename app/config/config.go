@@ -84,16 +84,16 @@ func GetAstraDBSession(config Config) (*gocql.Session, error) {
 
 }
 func GetAstraDBClient(config Config) (*astra.Client, error) {
-	c, err := astra.NewStaticTokenClient(
+	/* c, err := astra.NewStaticTokenClient(
 		config.AstraDBApplicationToken,
 		astra.WithSecureConnectBundle(BundlePath),
 		astra.WithDefaultKeyspace(config.DatabaseKeySpace),
-	)
-	/* c, err := astra.NewStaticTokenClient(
+	) */
+	c, err := astra.NewStaticTokenClient(
 		config.AstraDBApplicationToken,
 		astra.WithSecureConnectBundle(config.BundlePath),
 		astra.WithDefaultKeyspace(config.DatabaseKeySpace),
-	) */
+	)
 	if err != nil {
 		fmt.Println("Error:")
 		fmt.Println(err)

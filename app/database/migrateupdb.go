@@ -11,10 +11,13 @@ func MigrateUpDB(db *DB) {
 	var dropOrdersDB = db.DB.Query(`DROP TABLE IF EXISTS orders`)
 	var dropGroupDB = db.DB.Query(`DROP TABLE IF EXISTS group`)
 	var dropTradeDB = db.DB.Query(`DROP TABLE IF EXISTS trade`)
+	var dropGroupUSerDB = db.DB.Query(`DROP TABLE IF EXISTS groupuserrelation`)
+	//var createUserDB = db.DB.Query(`CREATE TABLE IF NOT EXISTS users ( userid uuid PRIMARY KEY,phonenumber bigint, verified boolean, first_name text,last_name text, groups map<uuid, text>, profile_pic text, otp int);`)
 	var createUserDB = db.DB.Query(`CREATE TABLE IF NOT EXISTS users ( userid uuid PRIMARY KEY,phonenumber bigint, verified boolean, first_name text,last_name text, groups map<uuid, text>, profile_pic text, otp int);`)
 	var createOrderDB = db.DB.Query(`CREATE TABLE IF NOT EXISTS orders (orderid uuid PRIMARY KEY, userid uuid, fiatAmount float, minAmount float, price float,timeLimit timestamp, type text);`)
 	var createGroupDB = db.DB.Query(`CREATE TABLE IF NOT EXISTS group( groupid uuid PRIMARY KEY, groupname text, creatorUserid uuid,createtime timestamp);`)
 	var createTradeDB = db.DB.Query(`CREATE TABLE IF NOT EXISTS trade( tradeid uuid PRIMARY KEY, orderid uuid, bidUserid uuid,tradetime timestamp,status text, method text);`)
+	var createGroupUserDB = db.DB.Query(`CREATE TABLE IF NOT EXISTS groupuserrelation ( groupid uuid, userid uuid,  PRIMARY KEY (groupid,userid));`)
 
 	fmt.Println("Dropping the tables now")
 	_, err := dropUserDB.Exec()
@@ -33,6 +36,10 @@ func MigrateUpDB(db *DB) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	_, err = dropGroupUSerDB.Exec()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	fmt.Println("Creating the tables now")
 	_, err = createUserDB.Exec()
@@ -48,6 +55,10 @@ func MigrateUpDB(db *DB) {
 		log.Fatal(err)
 	}
 	_, err = createTradeDB.Exec()
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, err = createGroupUserDB.Exec()
 	if err != nil {
 		log.Fatal(err)
 	}

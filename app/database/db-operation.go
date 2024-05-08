@@ -4,9 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/GirishBhutiya/gOpenfiatServer/app/model"
+	"github.com/GirishBhutiya/gOpenfiatServer/app/util"
 	"github.com/datastax-ext/astra-go-sdk"
 	"github.com/google/uuid"
 )
@@ -23,7 +25,7 @@ type DatabaseService interface {
 	UpdateUser(profilepath string, usr *model.UserUpdate) (model.User, error)
 	SubscribeGroupToUSer(userId uuid.UUID, group model.GroupUser) error
 	UnsubscribeGroupToUSer(userId uuid.UUID, group model.GroupUser) error
-	GetAllGroups(userId uuid.UUID) (model.UserGroups, error)
+	GetAllGroups(userId uuid.UUID) ([]model.GroupUser, error)
 	//groups
 	CreateNewGroup(userId uuid.UUID, group model.CreateGroup) (model.GroupUser, error)
 	UpdateGroup(group model.GroupUser) error
@@ -76,7 +78,7 @@ func (db *DB) InserLoginRegister(otp int, usr *model.UserLogin) error {
 func (db *DB) Login(phoneNumber int, otp int) (model.User, error) {
 	var user model.User
 	var motp, phone int
-	sel := `SELECT userid,phonenumber,verified,first_name,last_name,groups,profile_pic,otp FROM users WHERE phonenumber=? ALLOW FILTERING;`
+	sel := `SELECT userid,phonenumber,verified,first_name,last_name,profile_pic,otp FROM users WHERE phonenumber=? ALLOW FILTERING;`
 	rows, err := db.DB.Query(sel, phoneNumber).Exec()
 	if err != nil {
 		return user, err
@@ -86,7 +88,7 @@ func (db *DB) Login(phoneNumber int, otp int) (model.User, error) {
 	}
 	for _, r := range rows {
 		//vals := r.Values()
-		r.Scan(&user.ID, &phone, &user.Verified, &user.FirstName, &user.LastName, &user.Groups, &user.ProfilePic, &motp)
+		r.Scan(&user.ID, &phone, &user.Verified, &user.FirstName, &user.LastName, &user.ProfilePic, &motp)
 		/* fmt.Println("\nValues:", vals)
 		fmt.Println("\nuser:", user)
 		fmt.Println("opt:", otp, " motp:", motp) */
@@ -129,7 +131,7 @@ func (db *DB) UpdateUser(profilepath string, usr *model.UserUpdate) (model.User,
 }
 
 func (db *DB) SubscribeGroupToUSer(userId uuid.UUID, group model.GroupUser) error {
-	stmt := fmt.Sprintf("UPDATE users SET groups = groups + { %s : '%s' } WHERE userid=? IF EXISTS;", group.ID, group.Name)
+	/* stmt := fmt.Sprintf("UPDATE users SET groups = groups + { %s : '%s' } WHERE userid=? IF EXISTS;", group.ID, group.Name)
 	//stmt := `UPDATE users SET groups = groups + { ? : '?' } WHERE userid=? IF EXISTS;`
 	rows, err := db.DB.Query(stmt, userId).Exec()
 	if err != nil {
@@ -139,10 +141,22 @@ func (db *DB) SubscribeGroupToUSer(userId uuid.UUID, group model.GroupUser) erro
 		return errors.New("user not found")
 	}
 
+	return nil */
+
+	stmt := `INSERT INTO groupuserrelation (groupid,userid) values (?, ?) IF NOT EXISTS;`
+	rows, err := db.DB.Query(stmt, group.ID, userId).Exec()
+	if err != nil {
+		//log.Println("Error:", err)
+		return err
+	}
+	if rows[0].Values()[0] == false {
+		return errors.New("user already subscribed")
+	}
 	return nil
+
 }
 func (db *DB) UnsubscribeGroupToUSer(userId uuid.UUID, group model.GroupUser) error {
-	stmt := fmt.Sprintf("UPDATE users SET groups = groups - { %s } WHERE userid=? IF EXISTS;", group.ID)
+	/* stmt := fmt.Sprintf("UPDATE users SET groups = groups - { %s } WHERE userid=? IF EXISTS;", group.ID)
 	//stmt := `UPDATE users SET groups = groups - { ? } WHERE userid=? IF EXISTS;`
 	rows, err := db.DB.Query(stmt, userId).Exec()
 	log.Println(rows)
@@ -153,27 +167,70 @@ func (db *DB) UnsubscribeGroupToUSer(userId uuid.UUID, group model.GroupUser) er
 		return errors.New("user not found")
 	}
 
+	return nil */
+	stmt := `DELETE FROM groupuserrelation WHERE groupid=? AND userid=? IF EXISTS;`
+	rows, err := db.DB.Query(stmt, group.ID, userId).Exec()
+	if err != nil {
+		//log.Println("Error:", err)
+		return err
+	}
+	if rows[0].Values()[0] == false {
+		return errors.New("data not found")
+	}
 	return nil
+
 }
-func (db *DB) GetAllGroups(userId uuid.UUID) (model.UserGroups, error) {
-	var user model.User
-	var usrGroups model.UserGroups
-	stmt := "SELECT groups FROM users WHERE userid=?"
+func (db *DB) GetAllGroups(userId uuid.UUID) ([]model.GroupUser, error) {
+	var usrGroups []model.GroupUser
+	stmt := "SELECT groupid FROM groupuserrelation WHERE userid=? ALLOW FILTERING"
 	rows, err := db.DB.Query(stmt, userId).Exec()
 	if err != nil {
 		return usrGroups, err
 	}
 	if len(rows) == 0 {
-		return usrGroups, errors.New("user not found")
+		return usrGroups, errors.New("no groups found")
 	}
+	var gids []uuid.UUID
 	for _, r := range rows {
+		var gid uuid.UUID
 		//vals := r.Values()
-		r.Scan(&user.Groups)
-		//fmt.Println("\nValues:", vals)
+		r.Scan(&gid)
+		//fmt.Println("\n gIDS:", vals)
+		gids = append(gids, gid)
 
 	}
-	usrGroups.Groups = user.Groups
-	return usrGroups, nil
+	var sb strings.Builder
+	sb.WriteString("?")
+	for range gids[1:] {
+		sb.WriteString(", ?")
+	}
+
+	stmt = fmt.Sprintf("SELECT groupid,groupname FROM group WHERE groupid IN ( %s) ALLOW FILTERING", sb.String())
+	/* stmt = "SELECT groupid,groupname FROM group WHERE groupid IN ( ?,? ) ALLOW FILTERING"
+	log.Println("in else")
+	var sb strings.Builder
+	sb.WriteString(gids[0].String())
+	for _, g := range gids[1:] {
+		sb.WriteString(", ")
+		sb.WriteString(g.String())
+	}
+	log.Println("in else", sb.String()) */
+	rows, err = db.DB.Query(stmt, util.ConvertUUIDToAny(gids)...).Exec()
+
+	if err != nil {
+		return usrGroups, err
+	}
+	if len(rows) == 0 {
+		return usrGroups, errors.New("no groups found")
+	}
+	for _, r := range rows {
+		var g model.GroupUser
+		//vals := r.Values()
+		r.Scan(&g.ID, &g.Name)
+		//fmt.Println("\n Groups:", vals)
+		usrGroups = append(usrGroups, g)
+	}
+	return usrGroups, err
 }
 
 func (db *DB) CreateNewGroup(userId uuid.UUID, group model.CreateGroup) (model.GroupUser, error) {
@@ -215,7 +272,7 @@ func (db *DB) UpdateGroup(group model.GroupUser) error {
 }
 func (db *DB) DeleteGroup(userId uuid.UUID, group model.GroupUser) error {
 
-	stmt := `DELETE FROM group WHERE groupid=?  IF EXISTS;`
+	stmt := `DELETE FROM group WHERE groupid=? IF EXISTS;`
 	rows, err := db.DB.Query(stmt, group.ID).Exec()
 	if err != nil {
 		return err

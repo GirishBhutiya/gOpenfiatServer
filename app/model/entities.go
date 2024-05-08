@@ -40,8 +40,6 @@ type User struct {
 	//Is users phone number verified
 	// in: boolean
 	Verified bool `json:"verified"`
-
-	Groups map[uuid.UUID]string `json:"groups"`
 	// profile pic link of the user
 	// in: string
 	ProfilePic string `json:"profile_pic"`
