@@ -26,6 +26,8 @@ type DatabaseService interface {
 	SubscribeGroupToUSer(userId uuid.UUID, group model.GroupUser) error
 	UnsubscribeGroupToUSer(userId uuid.UUID, group model.GroupUser) error
 	GetAllGroups(userId uuid.UUID) ([]model.GroupUser, error)
+	CreateShortLink(group *model.GroupUser) (string, error)
+	SubscribeGroupViaInvite(inviteKey string, userId uuid.UUID) error
 	//groups
 	CreateNewGroup(userId uuid.UUID, group model.CreateGroup) (model.GroupUser, error)
 	UpdateGroup(group model.GroupUser) error
@@ -146,7 +148,7 @@ func (db *DB) SubscribeGroupToUSer(userId uuid.UUID, group model.GroupUser) erro
 	stmt := `INSERT INTO groupuserrelation (groupid,userid) values (?, ?) IF NOT EXISTS;`
 	rows, err := db.DB.Query(stmt, group.ID, userId).Exec()
 	if err != nil {
-		//log.Println("Error:", err)
+		log.Println("Error:", err)
 		return err
 	}
 	if rows[0].Values()[0] == false {
@@ -467,4 +469,55 @@ func (db *DB) GetOrderTrades(userId uuid.UUID, order model.OrderUser) ([]model.T
 	//fmt.Println("\norder:", trades)
 	return trades, nil
 
+}
+func (db *DB) CreateShortLink(group *model.GroupUser) (string, error) {
+	inviteKey := util.GenerateShortKey()
+	stmt := `INSERT INTO groupinvite (groupid,invitekey) values (?, ?) IF NOT EXISTS;`
+	rows, err := db.DB.Query(stmt, group.ID, inviteKey).Exec()
+	if err != nil {
+		//log.Println("Error:", err)
+		return "", err
+	}
+	if rows[0].Values()[0] == false {
+		//fmt.Println("Girish:", rows[0].Values()[0])
+		sect := `SELECT invitekey FROM groupinvite WHERE groupid=? ALLOW FILTERING;`
+		rows, err := db.DB.Query(sect, group.ID).Exec()
+		if err != nil {
+			return "", err
+		}
+
+		for _, r := range rows {
+			//vals := r.Values()
+			r.Scan(&inviteKey)
+
+			//fmt.Println("\nValues:", vals)
+			//fmt.Println("\norder:", trade)
+
+		}
+
+	}
+
+	return inviteKey, nil
+}
+func (db *DB) SubscribeGroupViaInvite(inviteKey string, userId uuid.UUID) error {
+	var group model.GroupUser
+	sect := `SELECT groupid FROM groupinvite WHERE invitekey=? ALLOW FILTERING;`
+	rows, err := db.DB.Query(sect, inviteKey).Exec()
+	if err != nil {
+		return err
+	}
+
+	for _, r := range rows {
+		//vals := r.Values()
+		r.Scan(&group.ID)
+		//fmt.Println("\nValues:", vals)
+		//fmt.Println("\norder:", trade)
+	}
+	log.Println("groupid", group.ID, " userid", userId)
+	err = db.SubscribeGroupToUSer(userId, group)
+	if err != nil {
+		log.Println("Error:", err)
+		return errors.New("group not subscribed to user")
+	}
+	return nil
 }

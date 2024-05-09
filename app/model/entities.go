@@ -215,3 +215,8 @@ type TradeUser struct {
 	// in: uuid
 	ID uuid.UUID `json:"tradeid"`
 }
+
+// swagger:model InviteLink
+type InviteLink struct {
+	InviteLink string `json:"invitelink"`
+}

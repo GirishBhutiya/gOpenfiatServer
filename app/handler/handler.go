@@ -172,7 +172,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 // @Produce			json
 // @Param			payload		body		AuthPayload	true	"LoginResponse"
 // @Tags			Auth
-// @Success			200		{object}	jsonResponse
+// @Success			200		{object}	LoginResponse
 // @Failure 401 {object} jsonResponse
 // @Router /login [post]
 func Login(w http.ResponseWriter, r *http.Request) {
@@ -946,4 +946,51 @@ func GetOrderTrades(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	WriteJSON(w, http.StatusOK, trades)
+}
+func CreateGroupInviteLink(w http.ResponseWriter, r *http.Request) {
+
+	var group model.GroupUser
+	err := ReadJSON(w, r, &group)
+	if err != nil {
+		log.Println(err)
+		ErrorJSON(w, err)
+		return
+	}
+	inviteKey, err := ser.Store.CreateShortLink(&group)
+	if err != nil {
+		log.Println(err)
+		ErrorJSON(w, err)
+		return
+	}
+	inviteLink := model.InviteLink{
+		InviteLink: fmt.Sprintf("%s/user/invite?key=%s", r.Host, inviteKey),
+	}
+	WriteJSON(w, http.StatusOK, inviteLink)
+
+}
+func SubscribeGroupViaInvite(w http.ResponseWriter, r *http.Request) {
+	//inviteKey := chi.URLParam(r, "key")
+	inviteKey := r.URL.Query().Get("key")
+	log.Println(r.RequestURI)
+	log.Println("Key", inviteKey)
+	if inviteKey == "" {
+		ErrorJSON(w, errors.New("can not get invite key"))
+		return
+	}
+	userid, ok := r.Context().Value(UserIDKey).(uuid.UUID)
+	if !ok {
+		ErrorJSON(w, errors.New("can not get userid"))
+		return
+	}
+	err := ser.Store.SubscribeGroupViaInvite(inviteKey, userid)
+	if err != nil {
+		log.Println(err)
+		ErrorJSON(w, err)
+		return
+	}
+	var payload jsonResponse
+	payload.Error = false
+	payload.Message = "Group Subscribed"
+
+	WriteJSON(w, http.StatusOK, payload)
 }

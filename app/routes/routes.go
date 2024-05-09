@@ -48,6 +48,8 @@ func Routes(tokenMaker token.Maker) http.Handler {
 		mux.Post("/subscribe", handler.SubscribeGroupToUSer)
 		mux.Post("/unsubscribe", handler.UnsubscribeGroupToUSer)
 		mux.Post("/getgroups", handler.GetAllGroups)
+		mux.Post("/creatinvitelink", handler.CreateGroupInviteLink)
+		mux.Get("/invite", handler.SubscribeGroupViaInvite)
 
 		//group endpoints
 		mux.Post("/create-group", handler.CreateGroup)

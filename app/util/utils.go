@@ -8,9 +8,11 @@ import (
 	"image/jpeg"
 	"io"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"regexp"
+	"time"
 
 	"github.com/GirishBhutiya/gOpenfiatServer/app/config"
 	"github.com/google/uuid"
@@ -82,6 +84,17 @@ func ConvertUUIDToAny(ids []uuid.UUID) []any {
 		newIds = append(newIds, id)
 	}
 	return newIds
+}
+func GenerateShortKey() string {
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	const keyLength = 6
+
+	rand.Seed(time.Now().UnixNano())
+	shortKey := make([]byte, keyLength)
+	for i := range shortKey {
+		shortKey[i] = charset[rand.Intn(len(charset))]
+	}
+	return string(shortKey)
 }
 
 /* func ConvertOrderStringToOrder(order *model.OrderHandlerString) (model.OrderHandler, error) {
