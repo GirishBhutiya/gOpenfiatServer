@@ -12,6 +12,23 @@ definitions:
           in: integer
         type: integer
     type: object
+  handler.LoginResponse:
+    properties:
+      access_token:
+        type: string
+      access_token_expires_at:
+        type: string
+      authenticated:
+        type: boolean
+      message:
+        type: string
+      refresh_token:
+        type: string
+      refresh_token_expires_at:
+        type: string
+      user:
+        $ref: '#/definitions/model.User'
+    type: object
   handler.jsonResponse:
     properties:
       data: {}
@@ -46,6 +63,11 @@ definitions:
         description: |-
           name of the group
           in: string
+        type: string
+    type: object
+  model.InviteLink:
+    properties:
+      invitelink:
         type: string
     type: object
   model.Order:
@@ -121,6 +143,39 @@ definitions:
           id of the trade
           in: uuid
         type: string
+    type: object
+  model.User:
+    properties:
+      first_name:
+        description: |-
+          first name of the user
+          in: string
+        type: string
+      last_name:
+        description: |-
+          last name of the user
+          in: string
+        type: string
+      phonenumber:
+        description: |-
+          phonenumber of the user
+          in: integer
+        type: integer
+      profile_pic:
+        description: |-
+          profile pic link of the user
+          in: string
+        type: string
+      userid:
+        description: |-
+          id of the user
+          in: integer
+        type: string
+      verified:
+        description: |-
+          Is users phone number verified
+          in: boolean
+        type: boolean
     type: object
   model.UserGroups:
     properties:
@@ -210,7 +265,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handler.jsonResponse'
+            $ref: '#/definitions/handler.LoginResponse'
         "401":
           description: Unauthorized
           schema:
@@ -376,6 +431,32 @@ paths:
       summary: Create Trade
       tags:
       - Trade
+  /user/creatinvitelink:
+    post:
+      consumes:
+      - application/json
+      description: This API is used to create group invite ley
+      parameters:
+      - description: model.InviteLink
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.GroupUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.InviteLink'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.jsonResponse'
+      summary: Create Group Invite Link
+      tags:
+      - User
   /user/delete-group:
     post:
       consumes:
@@ -470,6 +551,25 @@ paths:
       summary: Get Order Trades
       tags:
       - Order
+  /user/invite:
+    get:
+      consumes:
+      - application/json
+      description: This API is used to subscribe group via invite link
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.jsonResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.jsonResponse'
+      summary: Subscribe Group Via Invite
+      tags:
+      - User
   /user/order-delete:
     post:
       consumes:

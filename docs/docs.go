@@ -72,7 +72,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handler.jsonResponse"
+                            "$ref": "#/definitions/handler.LoginResponse"
                         }
                     },
                     "401": {
@@ -324,6 +324,46 @@ const docTemplate = `{
                 }
             }
         },
+        "/user/creatinvitelink": {
+            "post": {
+                "description": "This API is used to create group invite ley",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Create Group Invite Link",
+                "parameters": [
+                    {
+                        "description": "model.InviteLink",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.GroupUser"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.InviteLink"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.jsonResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/user/delete-group": {
             "post": {
                 "description": "This API is used to delete group",
@@ -457,6 +497,35 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/model.TradeHandler"
                             }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.jsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/invite": {
+            "get": {
+                "description": "This API is used to subscribe group via invite link",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Subscribe Group Via Invite",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.jsonResponse"
                         }
                     },
                     "401": {
@@ -883,6 +952,32 @@ const docTemplate = `{
                 }
             }
         },
+        "handler.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "access_token_expires_at": {
+                    "type": "string"
+                },
+                "authenticated": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "refresh_token": {
+                    "type": "string"
+                },
+                "refresh_token_expires_at": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/model.User"
+                }
+            }
+        },
         "handler.jsonResponse": {
             "type": "object",
             "properties": {
@@ -924,6 +1019,14 @@ const docTemplate = `{
                 },
                 "groupname": {
                     "description": "name of the group\nin: string",
+                    "type": "string"
+                }
+            }
+        },
+        "model.InviteLink": {
+            "type": "object",
+            "properties": {
+                "invitelink": {
                     "type": "string"
                 }
             }
@@ -1032,6 +1135,35 @@ const docTemplate = `{
                 "tradeid": {
                     "description": "id of the trade\nin: uuid",
                     "type": "string"
+                }
+            }
+        },
+        "model.User": {
+            "type": "object",
+            "properties": {
+                "first_name": {
+                    "description": "first name of the user\nin: string",
+                    "type": "string"
+                },
+                "last_name": {
+                    "description": "last name of the user\nin: string",
+                    "type": "string"
+                },
+                "phonenumber": {
+                    "description": "phonenumber of the user\nin: integer",
+                    "type": "integer"
+                },
+                "profile_pic": {
+                    "description": "profile pic link of the user\nin: string",
+                    "type": "string"
+                },
+                "userid": {
+                    "description": "id of the user\nin: integer",
+                    "type": "string"
+                },
+                "verified": {
+                    "description": "Is users phone number verified\nin: boolean",
+                    "type": "boolean"
                 }
             }
         },

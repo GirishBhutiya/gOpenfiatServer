@@ -947,6 +947,18 @@ func GetOrderTrades(w http.ResponseWriter, r *http.Request) {
 	}
 	WriteJSON(w, http.StatusOK, trades)
 }
+
+// CreateGroupInviteLink : create group invite link
+// This API is used to create group invite key
+// @Summary Create Group Invite Link
+// @Description This API is used to create group invite ley
+// @Tags User
+// @Accept  json
+// @Produce  json
+// @Param user  body model.GroupUser true "model.InviteLink"
+// @Success 200 {object} model.InviteLink
+// @Failure 401 {object} jsonResponse
+// @Router /user/creatinvitelink [post]
 func CreateGroupInviteLink(w http.ResponseWriter, r *http.Request) {
 
 	var group model.GroupUser
@@ -968,11 +980,22 @@ func CreateGroupInviteLink(w http.ResponseWriter, r *http.Request) {
 	WriteJSON(w, http.StatusOK, inviteLink)
 
 }
+
+// SubscribeGroupViaInvite : subscribe group via invite link
+// This API is used to subscribe group via invite link
+// @Summary Subscribe Group Via Invite
+// @Description This API is used to subscribe group via invite link
+// @Tags User
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} jsonResponse
+// @Failure 401 {object} jsonResponse
+// @Router /user/invite [get]
 func SubscribeGroupViaInvite(w http.ResponseWriter, r *http.Request) {
 	//inviteKey := chi.URLParam(r, "key")
 	inviteKey := r.URL.Query().Get("key")
-	log.Println(r.RequestURI)
-	log.Println("Key", inviteKey)
+	//log.Println(r.RequestURI)
+	//log.Println("Key", inviteKey)
 	if inviteKey == "" {
 		ErrorJSON(w, errors.New("can not get invite key"))
 		return

@@ -513,11 +513,11 @@ func (db *DB) SubscribeGroupViaInvite(inviteKey string, userId uuid.UUID) error 
 		//fmt.Println("\nValues:", vals)
 		//fmt.Println("\norder:", trade)
 	}
-	log.Println("groupid", group.ID, " userid", userId)
+	//log.Println("groupid", group.ID, " userid", userId)
 	err = db.SubscribeGroupToUSer(userId, group)
 	if err != nil {
 		log.Println("Error:", err)
-		return errors.New("group not subscribed to user")
+		return err
 	}
 	return nil
 }
